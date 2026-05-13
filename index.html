@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carebridge Home Health – Patient Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#e2e8f0;--card:#fff;--text:#1e293b;--muted:#64748b;--shadow:0 20px 35px -12px rgba(0,0,0,0.2)}
+.dark-mode{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--shadow:0 20px 35px -12px rgba(0,0,0,0.5)}
+body{background:var(--bg);font-family:'Segoe UI',Roboto,sans-serif;padding:16px 12px 80px;display:flex;flex-direction:column;align-items:center;color:var(--text);transition:background .3s,color .3s}
+.wrap{max-width:1100px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding-top:56px}
+
+/* STICKY EMERGENCY BANNER */
+.sticky-em{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#7F1A1A,#DC2626);color:#fff;padding:6px 12px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;border-top:3px solid #FECACA;font-size:0.75rem}
+.sticky-em .em911{background:#fff;color:#DC2626;padding:3px 14px;border-radius:40px;font-weight:800;font-size:1rem}
+
+/* CONTROLS */
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--shadow);position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:100;border:1px solid rgba(255,255,255,0.15);max-width:96%}
+.ctrl button,.ctrl select{padding:5px 12px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);background:var(--card);color:var(--text);font-weight:600;font-size:0.7rem;cursor:pointer;transition:all .2s}
+.ctrl button:hover{background:#1E3A8A;color:#fff}
+.ctrl select{max-width:130px}
+
+/* PAGE */
+.page{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--border, rgba(0,0,0,0.08));scroll-margin-top:70px}
+.page-hdr{padding:14px 20px;border-bottom:4px solid;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.page-hdr h1{font-size:1.3rem;font-weight:800}
+.page-hdr .icd{background:rgba(0,0,0,0.05);padding:3px 10px;border-radius:40px;font-size:0.65rem;font-weight:600;color:var(--muted)}
+.page-body{padding:10px 20px 16px}
+
+/* TRAFFIC LIGHT HEADER */
+.traffic{display:flex;gap:6px;justify-content:center;margin:8px 0 12px}
+.traffic .tl{width:80px;padding:6px;border-radius:12px;text-align:center;font-size:0.65rem;font-weight:700}
+.tl-g{background:#DCFCE7;border:2px solid #22C55E;color:#166534}
+.tl-y{background:#FEF9C3;border:2px solid #EAB308;color:#854D0E}
+.tl-r{background:#FEE2E2;border:2px solid #EF4444;color:#991B1B}
+
+/* ZONE STICKERS */
+.z3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:8px 0}
+.z-card{border-radius:16px;padding:14px 10px;text-align:center;border:3px solid}
+.z-icon{font-size:2rem}
+.z-title{font-size:1rem;font-weight:800;margin:4px 0}
+.z-items{text-align:left;font-size:0.75rem;font-weight:600;line-height:1.4;margin:6px 0}
+.z-items span{display:block;margin:4px 0}
+.z-call{display:block;background:#EF4444;color:#fff;border-radius:40px;padding:6px;font-weight:800;font-size:0.9rem;margin-top:8px}
+.z-green{background:#DCFCE7;border-color:#22C55E;color:#166534}
+.z-yellow{background:#FEF9C3;border-color:#EAB308;color:#854D0E}
+.z-red{background:#FEE2E2;border-color:#EF4444;color:#991B1B}
+
+/* UNIVERSAL RED 911 BOX */
+.red-box{background:linear-gradient(135deg,#7F1A1A,#DC2626);color:#fff;border-radius:14px;padding:12px;text-align:center;margin:8px 0;border:2px solid #FECACA}
+.red-box .rb-icons{font-size:1.5rem;margin-bottom:4px}
+.red-box .rb-title{font-size:1.1rem;font-weight:800}
+.red-box .rb-911{font-size:1.3rem;font-weight:900;margin:4px 0}
+.red-box .rb-list{font-size:0.75rem;font-weight:600;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+
+/* GIANT COVER */
+.cover{background:linear-gradient(135deg,#0B2F5F,#0F3B6A);color:#fff;text-align:center;padding:40px 20px;min-height:70vh;display:flex;flex-direction:column;justify-content:center}
+.cover h1{font-size:2.2rem;margin:12px 0 8px;color:#fff}
+.cover .sub{font-size:1.1rem;font-weight:500}
+.cover .phone{font-size:1.4rem;font-weight:800;margin:12px 0}
+.cover .qr{font-size:2.5rem;opacity:.4;margin:8px 0}
+
+/* LEGEND */
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.leg-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,0.03);font-weight:600;font-size:0.78rem}
+
+/* BODY MAP */
+.body-map{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:12px;background:#fefcf5;border-radius:16px;border:2px dashed #cbd5e1}
+.bm-part{background:#fff;border-radius:12px;padding:8px 12px;border-left:5px solid;font-size:0.78rem;font-weight:700;margin:3px;display:inline-block;box-shadow:0 2px 6px rgba(0,0,0,0.05)}
+.bm-fig{font-size:50px;text-align:center;min-width:80px;line-height:1}
+
+/* DAILY CHECK */
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.chk-item{background:rgba(0,0,0,0.03);border-radius:14px;padding:12px;text-align:center;font-weight:600;font-size:0.75rem}
+.chk-faces{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.chk-faces span{font-size:1.3rem;cursor:pointer;padding:2px 6px;border-radius:8px;transition:all .2s}
+.chk-faces span:hover{background:rgba(0,0,0,0.1)}
+.chk-result{font-size:0.85rem;font-weight:800;margin-top:8px;padding:6px;border-radius:8px}
+
+/* PILL CLOCK */
+.pill-clock{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.pill-time{background:rgba(0,0,0,0.03);border-radius:14px;padding:12px;text-align:center;font-weight:600;font-size:0.7rem}
+.pill-time .pt-icon{font-size:1.5rem;display:block;margin-bottom:4px}
+
+/* WALLET CARD */
+.wallet-card{background:#FEF3C7;border:3px dashed #D97706;border-radius:16px;padding:16px;text-align:center;margin:8px 0;position:relative}
+.wallet-card .wc-cut{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#D97706;color:#fff;padding:2px 12px;border-radius:40px;font-size:0.65rem;font-weight:800}
+.wc-grid{display:grid;grid-template-columns:auto 1fr;gap:6px;font-size:0.7rem;font-weight:600;margin-top:10px;text-align:left}
+.wc-grid span{padding:2px 4px;border-bottom:1px dashed #ccc;min-height:20px}
+
+/* GLANCE TABLE */
+.glance{width:100%;border-collapse:collapse;font-size:0.72rem}
+.glance th{padding:6px;text-align:center;font-weight:800;font-size:0.65rem;color:#fff}
+.glance td{padding:5px;text-align:center;border-bottom:1px solid var(--border,rgba(0,0,0,0.05));font-weight:600}
+.g-green{background:#DCFCE7}.g-yellow{background:#FEF9C3}.g-red{background:#FEE2E2}
+
+/* MISC */
+.hotspot{background:#fff;border-radius:36px;padding:5px 12px;font-size:0.75rem;font-weight:700;border-left:5px solid;margin:3px;display:inline-block}
+.safety{border-radius:12px;padding:10px 14px;margin:8px 0;border-left:8px solid;font-size:0.72rem;font-weight:600}
+.safety h3{font-size:0.9rem;font-weight:800;margin-bottom:4px}
+.fall{background:#FFF8E1;border-color:#E65100}
+.med{background:#F3E5F5;border-color:#7B1FA2}
+.elder{background:#E3F2FD;border-color:#1565C0}
+.refooter{background:#1E293B;color:#E2E8F0;border-radius:20px;padding:24px;text-align:center}
+.refooter .cr{color:#FBBF24;font-weight:700}
+
+@media(max-width:700px){.z3{grid-template-columns:1fr}.pill-clock{grid-template-columns:repeat(2,1fr)}.ctrl{font-size:0.6rem;gap:4px}}
+@media print{body{background:#fff;padding:0}.ctrl,.sticky-em{display:none!important}.page{box-shadow:none;margin:0;border:none;page-break-after:always;border-radius:0}
+@page{size:A4;margin:1.2cm}}
+</style>
+</head>
+<body>
+
+<!-- STICKY EMERGENCY BANNER -->
+<div class="sticky-em"><span style="font-size:1.2rem">🚨</span><span><strong>Can't breathe? Chest pain? Face drooping? Bleeding bad?</strong></span><span class="em911">CALL 911 NOW</span><span style="font-weight:600">or go to ER</span></div>
+
+<div class="wrap">
+
+<!-- CONTROLS -->
+<div class="ctrl">
+  <button onclick="toggleDark()">🌙 Dark</button>
+  <button onclick="toggleFont()">🔠 Large</button>
+  <button onclick="window.print()">🖨️ Print</button>
+  <button onclick="window.open('triage.html','_blank')" style="background:#3B82F6;color:#fff">🤖 AI Check</button>
+  <select onchange="go(this.value)" style="max-width:130px">
+    <option value="">📖 Jump to...</option>
+    <option value="toc">📋 Contents</option>
+    <option value="legend">🏷️ Legend</option>
+    <option value="bodycheck">🧍 Body Map</option>
+    <option value="dailycheck">📅 Daily Check</option>
+    <option value="glance">👀 At a Glance</option>
+    <option value="pillclock">💊 Pill Clock</option>
+    <option value="p-chf">🫀 CHF</option>
+    <option value="p-copd">🫁 COPD</option>
+    <option value="p-diab">🩸 Diabetes</option>
+    <option value="p-stroke">🧠 Stroke</option>
+    <option value="p-wound">🩹 Wound</option>
+    <option value="p-uti">🦠 UTI</option>
+    <option value="p-falls">🦴 Falls</option>
+    <option value="p-meds">💊 Meds</option>
+    <option value="ref">📞 Contacts</option>
+    <option value="wallet">💳 Wallet Card</option>
+  </select>
+</div>
+
+<!-- ===== COVER ===== -->
+<div class="page" id="cover">
+  <div class="cover">
+    <div style="font-size:3rem">🏠💙</div>
+    <h1>Complete Home Health<br>Patient Guide</h1>
+    <p class="sub">Know Your Zones • Know When to Call</p>
+    <div style="height:3px;width:60px;background:#F59E0B;margin:16px auto"></div>
+    <p class="phone">Carebridge Home Health<br>(248) 559-5661</p>
+    <div style="margin-top:16px;font-size:0.8rem;opacity:.6">📱 Email this file to yourself or open on your phone from the same WiFi</div>
+    <div style="margin-top:16px;background:rgba(59,130,246,0.3);border-radius:14px;padding:12px;border:1px solid rgba(59,130,246,0.5)">
+      <div style="font-size:1.2rem">🤖</div>
+      <div style="font-weight:700;font-size:0.9rem">Try the AI Health Check</div>
+      <div style="font-size:0.75rem;opacity:.8">Answer 5 quick questions → Get your zone → Know what to do</div>
+      <a href="triage.html" target="_blank" style="display:inline-block;margin-top:8px;background:#3B82F6;color:#fff;padding:6px 20px;border-radius:40px;font-weight:700;font-size:0.85rem;text-decoration:none">🤖 Start AI Triage</a>
+    </div>
+    <p style="margin-top:16px;font-size:0.75rem;opacity:.6">Created by Aadil Manzoor Rather • Clinical Intake Coordinator</p>
+  </div>
+</div>
+
+<!-- ===== CONTENTS + LEGEND ===== -->
+<div class="page" id="toc">
+  <div class="page-hdr" style="border-bottom-color:#1E3A8A"><h1>📋 Quick Contents</h1></div>
+  <div class="page-body">
+    <div class="legend">
+      <div class="leg-item" onclick="go('legend')"><span style="font-size:1.2rem">🏷️</span> Condition Legend</div>
+      <div class="leg-item" onclick="go('bodycheck')"><span style="font-size:1.2rem">🧍</span> Body Map</div>
+      <div class="leg-item" onclick="go('dailycheck')"><span style="font-size:1.2rem">📅</span> Daily Check</div>
+      <div class="leg-item" onclick="go('glance')"><span style="font-size:1.2rem">👀</span> At a Glance</div>
+      <div class="leg-item" onclick="go('pillclock')"><span style="font-size:1.2rem">💊</span> Pill Clock</div>
+      <div class="leg-item" onclick="go('p-chf')"><span style="font-size:1.2rem">🫀</span> Heart (CHF)</div>
+      <div class="leg-item" onclick="go('p-copd')"><span style="font-size:1.2rem">🫁</span> Lungs (COPD)</div>
+      <div class="leg-item" onclick="go('p-diab')"><span style="font-size:1.2rem">🩸</span> Diabetes</div>
+      <div class="leg-item" onclick="go('p-stroke')"><span style="font-size:1.2rem">🧠</span> Stroke</div>
+      <div class="leg-item" onclick="go('p-wound')"><span style="font-size:1.2rem">🩹</span> Wound Care</div>
+      <div class="leg-item" onclick="go('p-uti')"><span style="font-size:1.2rem">🦠</span> UTI</div>
+      <div class="leg-item" onclick="go('p-falls')"><span style="font-size:1.2rem">🦴</span> Falls</div>
+      <div class="leg-item" onclick="go('p-meds')"><span style="font-size:1.2rem">💊</span> Medications</div>
+      <div class="leg-item" onclick="go('ref')"><span style="font-size:1.2rem">📞</span> Contacts</div>
+      <div class="leg-item" onclick="go('wallet')"><span style="font-size:1.2rem">💳</span> Wallet Card</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONDITION LEGEND ===== -->
+<div class="page" id="legend">
+  <div class="page-hdr" style="border-bottom-color:#1E3A8A"><h1>🏷️ Condition Legend</h1><span class="icd">Find your page fast</span></div>
+  <div class="page-body">
+    <div class="legend">
+      <div class="leg-item" style="border-left:6px solid #EF4444"><span>🫀</span> Heart Failure (CHF)</div>
+      <div class="leg-item" style="border-left:6px solid #0284C7"><span>🫁</span> COPD / Asthma</div>
+      <div class="leg-item" style="border-left:6px solid #7C3AED"><span>🩸</span> Diabetes</div>
+      <div class="leg-item" style="border-left:6px solid #DC2626"><span>🧠</span> Stroke Warning</div>
+      <div class="leg-item" style="border-left:6px solid #059669"><span>🩹</span> Wound Care</div>
+      <div class="leg-item" style="border-left:6px solid #EAB308"><span>🦠</span> Urinary Infection (UTI)</div>
+      <div class="leg-item" style="border-left:6px solid #F59E0B"><span>🦴</span> Falls & Safety</div>
+      <div class="leg-item" style="border-left:6px solid #7C3AED"><span>💊</span> Medication Safety</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BODY MAP ===== -->
+<div class="page" id="bodycheck">
+  <div class="page-hdr" style="border-bottom-color:#1E3A8A"><h1>🧍 Body Map — Where Does It Hurt?</h1><span class="icd">Point to where you feel it</span></div>
+  <div class="page-body">
+    <div class="body-map">
+      <div class="bm-fig">🧍</div>
+      <div>
+        <div class="bm-part" style="border-left-color:#7C3AED">🧠 Confused or sleepy? → Diabetes / UTI / Stroke</div>
+        <div class="bm-part" style="border-left-color:#DC2626">👁️ Blurry vision? → Diabetes</div>
+        <div class="bm-part" style="border-left-color:#EF4444">🫀 Chest tightness, can't breathe? → CHF</div>
+        <div class="bm-part" style="border-left-color:#0284C7">🫁 Wheezing, coughing, breathless? → COPD</div>
+        <div class="bm-part" style="border-left-color:#7C3AED">💊 Rash, hives, itching? → Medication allergy</div>
+        <div class="bm-part" style="border-left-color:#EAB308">🩸 Burning when you pee? → UTI</div>
+        <div class="bm-part" style="border-left-color:#059669">🩹 Sore, wound, cut not healing? → Wound Care</div>
+        <div class="bm-part" style="border-left-color:#EF4444">🦵 Swollen legs, ankles, feet? → CHF</div>
+        <div class="bm-part" style="border-left-color:#7C3AED">🦶 Numb feet, foot sores? → Diabetes</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DAILY CHECK POSTER ===== -->
+<div class="page" id="dailycheck">
+  <div class="page-hdr" style="border-bottom-color:#22C55E"><h1>📅 Am I OK Today? — Daily Check</h1><span class="icd">Point to the face that matches how you feel</span></div>
+  <div class="page-body">
+    <div class="traffic">
+      <div class="tl tl-g">😊 All Good</div>
+      <div class="tl tl-y">😐 A Little Off</div>
+      <div class="tl tl-r">😰 Not Good</div>
+    </div>
+    <div class="check-grid">
+      <div class="chk-item">🫀 My heart / breathing<div class="chk-faces"><span onclick="checkDaily(this,'g')">😊</span><span onclick="checkDaily(this,'y')">😐</span><span onclick="checkDaily(this,'r')">😰</span></div></div>
+      <div class="chk-item">🫁 My lungs / cough<div class="chk-faces"><span onclick="checkDaily(this,'g')">😊</span><span onclick="checkDaily(this,'y')">😐</span><span onclick="checkDaily(this,'r')">😰</span></div></div>
+      <div class="chk-item">🩸 My blood sugar<div class="chk-faces"><span onclick="checkDaily(this,'g')">😊</span><span onclick="checkDaily(this,'y')">😐</span><span onclick="checkDaily(this,'r')">😰</span></div></div>
+      <div class="chk-item">🦶 My feet / sores<div class="chk-faces"><span onclick="checkDaily(this,'g')">😊</span><span onclick="checkDaily(this,'y')">😐</span><span onclick="checkDaily(this,'r')">😰</span></div></div>
+      <div class="chk-item">🚽 Any burning / urine<div class="chk-faces"><span onclick="checkDaily(this,'g')">😊</span><span onclick="checkDaily(this,'y')">😐</span><span onclick="checkDaily(this,'r')">😰</span></div></div>
+      <div class="chk-item">💊 Took all my pills<div class="chk-faces"><span onclick="checkDaily(this,'g')">✅</span><span onclick="checkDaily(this,'y')">❓</span><span onclick="checkDaily(this,'r')">❌</span></div></div>
+    </div>
+    <div id="dailyResult" class="chk-result" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== AT A GLANCE ===== -->
+<div class="page" id="glance">
+  <div class="page-hdr" style="border-bottom-color:#1E3A8A"><h1>👀 At a Glance — What Should I Do?</h1><span class="icd">Find your condition row</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green = All Good</div><div class="tl tl-y">😐 Yellow = Call Carebridge</div><div class="tl tl-r">😰 Red = Call 911</div></div>
+    <table class="glance">
+      <tr><th style="background:#22C55E">🟢 ALL GOOD</th><th style="background:#EAB308">🟡 CALL TODAY</th><th style="background:#EF4444">🔴 911 NOW</th></tr>
+      <tr><td class="g-green">🫀 Breathing fine, no swelling</td><td class="g-yellow">🫀 +2-3 lbs weight, new cough</td><td class="g-red">🫀 Can't breathe, chest pain</td></tr>
+      <tr><td class="g-green">🫁 No wheezing, easy breathing</td><td class="g-yellow">🫁 Using inhaler more, fever</td><td class="g-red">🫁 Blue lips, can't talk</td></tr>
+      <tr><td class="g-green">🩸 Sugar 80-180, feel good</td><td class="g-yellow">🩸 Sugar >250 or <70</td><td class="g-red">🩸 Vomiting + confusion</td></tr>
+      <tr><td class="g-green">🧠 Normal strength & speech</td><td class="g-yellow">🧠 New mild weakness, dizzy</td><td class="g-red">🧠 Face droops, can't speak</td></tr>
+      <tr><td class="g-green">🦠 No burning, clear urine</td><td class="g-yellow">🦠 Burning, cloudy, confused</td><td class="g-red">🦠 Fever + back pain</td></tr>
+      <tr><td class="g-green">🩹 Wound smaller, pink tissue</td><td class="g-yellow">🩹 More drainage, redness</td><td class="g-red">🩹 Black tissue, odor + fever</td></tr>
+      <tr><td class="g-green">🦴 Steady, no falls</td><td class="g-yellow">🦴 Fell, new pain, dizzy</td><td class="g-red">🦴 Hit head + blood thinners</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PILL CLOCK ===== -->
+<div class="page" id="pillclock">
+  <div class="page-hdr" style="border-bottom-color:#7C3AED"><h1>💊 Medicine Time Clock</h1><span class="icd">When to take your pills</span></div>
+  <div class="page-body">
+    <p style="font-size:0.78rem;font-weight:600;text-align:center;margin-bottom:8px">Match your pills to the sun or moon</p>
+    <div class="pill-clock">
+      <div class="pill-time"><span class="pt-icon">🌅</span>Morning<br><span style="font-weight:800;font-size:0.85rem">💊 💊</span><br><span style="color:var(--muted)">With breakfast</span></div>
+      <div class="pill-time"><span class="pt-icon">☀️</span>Noon<br><span style="font-weight:800;font-size:0.85rem">💊</span><br><span style="color:var(--muted)">With lunch</span></div>
+      <div class="pill-time"><span class="pt-icon">🌇</span>Evening<br><span style="font-weight:800;font-size:0.85rem">💊 💊</span><br><span style="color:var(--muted)">With dinner</span></div>
+      <div class="pill-time"><span class="pt-icon">🌙</span>Bedtime<br><span style="font-weight:800;font-size:0.85rem">💊</span><br><span style="color:var(--muted)">Before sleep</span></div>
+    </div>
+    <div class="safety med"><h3>💊 Important</h3><p>❌ Never split or crush pills unless your doctor said it's OK. ❌ Never stop a medicine without calling your doctor first. 📞 Carebridge: (248) 559-5661</p></div>
+  </div>
+</div>
+
+<!-- ===== CHF ===== -->
+<div class="page" id="p-chf">
+  <div class="page-hdr" style="border-bottom-color:#EF4444"><h1>🫀 Heart Failure (CHF)</h1><span class="icd">Heart Pump Problem</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – OK</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">I'm OK</div><div class="z-items"><span>✔ No trouble breathing</span><span>✔ No swelling in legs</span><span>✔ Taking my water pills</span><span>✔ Eating low salt</span></div><div style="font-weight:700;font-size:0.75rem">Keep doing what you do!</div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ Short of breath walking</span><span>❗ Need extra pillows to sleep</span><span>❗ Gained 2-3 lbs in 1 day</span><span>❗ Swollen feet or ankles</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Gasping for air</span><span>🔥 Chest pain</span><span>🔥 Gained 5+ lbs in 1 day</span><span>🔥 Confused or passing out</span></div><span class="z-call">CALL 911 NOW</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🫀🚨</div><div class="rb-title">Any of these? CALL 911</div><div class="rb-list"><span>🫁 Can't breathe</span><span>💔 Chest pain</span><span>😵 Confused</span><span>⚖️ +5 lbs overnight</span></div></div>
+  </div>
+</div>
+
+<!-- ===== COPD ===== -->
+<div class="page" id="p-copd">
+  <div class="page-hdr" style="border-bottom-color:#0284C7"><h1>🫁 COPD & Asthma</h1><span class="icd">Lung / Breathing Problem</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – OK</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">I'm OK</div><div class="z-items"><span>✔ Breathing easy</span><span>✔ Using inhaler as usual</span><span>✔ Sleeping through night</span><span>✔ Doing my daily tasks</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ Wheezing more than usual</span><span>❗ Using inhaler more often</span><span>❗ Cough waking me at night</span><span>❗ Fever or cold symptoms</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Can't speak sentences</span><span>🔥 Blue lips or fingernails</span><span>🔥 Rescue inhaler not working</span><span>🔥 Very sleepy or confused</span></div><span class="z-call">CALL 911 NOW</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🫁🚨</div><div class="rb-title">Any of these? CALL 911</div><div class="rb-list"><span>🗣️ Can't talk</span><span>💙 Blue lips</span><span>😴 Too sleepy</span><span>💨 Inhaler not helping</span></div></div>
+  </div>
+</div>
+
+<!-- ===== DIABETES ===== -->
+<div class="page" id="p-diab">
+  <div class="page-hdr" style="border-bottom-color:#7C3AED"><h1>🩸 Diabetes</h1><span class="icd">Blood Sugar Problem</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – OK</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">I'm OK</div><div class="z-items"><span>✔ Blood sugar 80-180</span><span>✔ Taking insulin / pills on time</span><span>✔ Eating 3 meals a day</span><span>✔ No foot sores</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ Sugar >250 or below 70</span><span>❗ Shaky, sweaty, hungry</span><span>❗ Blurry vision</span><span>❗ Foot sore not healing</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Vomiting + high sugar</span><span>🔥 Breath smells like fruit</span><span>🔥 Very confused</span><span>🔥 Passed out</span></div><span class="z-call">CALL 911 NOW</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🩸🚨</div><div class="rb-title">Any of these? CALL 911</div><div class="rb-list"><span>🤢 Vomiting</span><span>🍎 Fruity breath</span><span>😵 Confused</span><span>😴 Passed out</span></div></div>
+  </div>
+</div>
+
+<!-- ===== STROKE ===== -->
+<div class="page" id="p-stroke">
+  <div class="page-hdr" style="border-bottom-color:#DC2626"><h1>🧠 Stroke Warning</h1><span class="icd">Brain Attack – Every Minute Counts</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-r" style="width:100%">🔴 STROKE IS ALWAYS AN EMERGENCY – BE FAST</div></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0;text-align:center">
+      <div style="background:#FEF2F2;border-radius:12px;padding:10px 4px;border:3px solid #EF4444"><div style="font-size:1.4rem">😊</div><div style="font-weight:800;color:#991B1B;font-size:0.8rem">B</div><div style="font-size:0.6rem">Balance off?</div></div>
+      <div style="background:#FEF2F2;border-radius:12px;padding:10px 4px;border:3px solid #EF4444"><div style="font-size:1.4rem">👁️</div><div style="font-weight:800;color:#991B1B;font-size:0.8rem">E</div><div style="font-size:0.6rem">Eyes blurry?</div></div>
+      <div style="background:#FEF2F2;border-radius:12px;padding:10px 4px;border:3px solid #EF4444"><div style="font-size:1.4rem">😀</div><div style="font-weight:800;color:#991B1B;font-size:0.8rem">F</div><div style="font-size:0.6rem">Face drooping?</div></div>
+      <div style="background:#FEF2F2;border-radius:12px;padding:10px 4px;border:3px solid #EF4444"><div style="font-size:1.4rem">💪</div><div style="font-weight:800;color:#991B1B;font-size:0.8rem">A</div><div style="font-size:0.6rem">Arm weak?</div></div>
+      <div style="background:#FEF2F2;border-radius:12px;padding:10px 4px;border:3px solid #EF4444"><div style="font-size:1.4rem">🗣️</div><div style="font-weight:800;color:#991B1B;font-size:0.8rem">S</div><div style="font-size:0.6rem">Speech weird?</div></div>
+    </div>
+    <div style="text-align:center;font-weight:800;color:#DC2626;font-size:1rem;margin-bottom:8px">⏰ T = TIME – Call 911 NOW. Note when it started.</div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">Prevention</div><div class="z-items"><span>✔ Taking blood thinner</span><span>✔ BP under control</span><span>✔ Doing rehab exercises</span><span>✔ No new symptoms</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ New mild weakness one side</span><span>❗ Slight speech change</span><span>❗ Dizziness / balance off</span><span>❗ Bad headache</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Face drooping on one side</span><span>🔥 Can't lift one arm</span><span>🔥 Slurred or strange speech</span><span>🔥 Confused / can't understand</span></div><span class="z-call">CALL 911 NOW</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🧠🚨</div><div class="rb-title">BE FAST – Any ONE of these? Call 911!</div><div class="rb-list"><span>😀 Face droop</span><span>💪 Arm weak</span><span>🗣️ Speech weird</span><span>⏰ Time = Brain cells dying</span></div></div>
+  </div>
+</div>
+
+<!-- ===== WOUND ===== -->
+<div class="page" id="p-wound">
+  <div class="page-hdr" style="border-bottom-color:#059669"><h1>🩹 Wound Care</h1><span class="icd">Sores / Cuts / Pressure Sores</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – Healing</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – ER Now</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">Healing Well</div><div class="z-items"><span>✔ Wound is getting smaller</span><span>✔ Pink/red healthy tissue</span><span>✔ No fever</span><span>✔ Dressing stays clean & dry</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ More drainage, green/yellow</span><span>❗ Redness around wound</span><span>❗ Feels warm + fever</span><span>❗ Wound getting bigger</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">GO TO ER</div><div class="z-items"><span>🔥 Black or gray tissue</span><span>🔥 Bad smell + fever</span><span>🔥 Can see bone</span><span>🔥 Red streaks up the limb</span></div><span class="z-call">CALL 911</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🩹🚨</div><div class="rb-title">Any of these? GO TO ER NOW</div><div class="rb-list"><span>⚫ Black tissue</span><span>🤢 Bad smell</span><span>📈 Red streaks</span><span>🦴 Bone visible</span></div></div>
+  </div>
+</div>
+
+<!-- ===== UTI ===== -->
+<div class="page" id="p-uti">
+  <div class="page-hdr" style="border-bottom-color:#EAB308"><h1>🦠 Urinary Tract Infection (UTI)</h1><span class="icd">Bladder / Kidney Infection</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – OK</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">No UTI</div><div class="z-items"><span>✔ No burning when I pee</span><span>✔ Urine is clear</span><span>✔ No fever</span><span>✔ Drinking water every day</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ Burning when I pee</span><span>❗ Urine smells bad / cloudy</span><span>❗ Low fever</span><span>❗ Elderly: suddenly confused</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 High fever + shaking chills</span><span>🔥 Back pain below ribs</span><span>🔥 Vomiting</span><span>🔥 Can't pee at all</span></div><span class="z-call">CALL 911</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🦠🚨</div><div class="rb-title">Any of these? CALL 911 – Kidney infection risk</div><div class="rb-list"><span>🌡️ High fever + shakes</span><span>🔙 Back pain</span><span>🤢 Vomiting</span><span>🚽 Can't pee</span></div></div>
+    <div class="safety elder"><h3>👵🧠 In elderly: confusion may be the ONLY sign!</h3><p>No fever, no burning – just sudden confusion. If your loved one seems "not right," call (248) 559-5661 same day.</p></div>
+  </div>
+</div>
+
+<!-- ===== FALLS ===== -->
+<div class="page" id="p-falls">
+  <div class="page-hdr" style="border-bottom-color:#F59E0B"><h1>🦴 Falls & Safety</h1><span class="icd">Stay Safe at Home</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – Safe</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">Safe & Steady</div><div class="z-items"><span>✔ Walking without holding furniture</span><span>✔ No dizziness</span><span>✔ Using walker/cane every time</span><span>✔ No rugs or clutter on floor</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ I fell – new pain anywhere</span><span>❗ Can't put weight on leg/foot</span><span>❗ Feel dizzy often</span><span>❗ Swelling or bruising getting worse</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Hit my head</span><span>🔥 On blood thinners + fell</span><span>🔥 Can't stand up</span><span>🔥 Bone sticking out</span></div><span class="z-call">CALL 911</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨🦴🚨</div><div class="rb-title">Any of these? CALL 911</div><div class="rb-list"><span>🤕 Hit head</span><span>💊 On blood thinner + fell</span><span>🦵 Can't stand</span><span>🦴 Bone showing</span></div></div>
+    <div class="safety fall"><h3>🏠 Home Safety</h3><p>Remove throw rugs. Install grab bars. Night lights on. Non-slip shoes. Phone always within reach. Use walker EVERY time – even for 2 steps.</p></div>
+  </div>
+</div>
+
+<!-- ===== MEDS ===== -->
+<div class="page" id="p-meds">
+  <div class="page-hdr" style="border-bottom-color:#7C3AED"><h1>💊 Medication Safety</h1><span class="icd">Taking Pills Safely</span></div>
+  <div class="page-body">
+    <div class="traffic"><div class="tl tl-g">😊 Green – Safe</div><div class="tl tl-y">😐 Yellow – Call</div><div class="tl tl-r">😰 Red – 911</div></div>
+    <div class="z3">
+      <div class="z-card z-green"><div class="z-icon">✅</div><div class="z-title">Taking Safely</div><div class="z-items"><span>✔ Taking meds as prescribed</span><span>✔ Using pill box every day</span><span>✔ Know what each pill is for</span><span>✔ Have enough refills</span></div></div>
+      <div class="z-card z-yellow"><div class="z-icon">⚠️</div><div class="z-title">Call Today</div><div class="z-items"><span>❗ New rash or itching</span><span>❗ Nausea or diarrhea from new med</span><span>❗ Missed 2+ doses of important med</span><span>❗ Not sure if I took my dose</span></div><div style="font-weight:800;font-size:0.8rem;margin-top:4px">📞 (248) 559-5661</div></div>
+      <div class="z-card z-red"><div class="z-icon">🚨</div><div class="z-title">CALL 911</div><div class="z-items"><span>🔥 Took too many pills (overdose)</span><span>🔥 Hives all over + swelling</span><span>🔥 Trouble breathing</span><span>🔥 Passed out</span></div><span class="z-call">CALL 911</span></div>
+    </div>
+    <div class="red-box"><div class="rb-icons">🚨💊🚨</div><div class="rb-title">Any of these? CALL 911 or Poison Control</div><div class="rb-list"><span>⚠️ Overdose</span><span>🤧 Allergic reaction</span><span>🫁 Can't breathe</span><span>📞 1-800-222-1222</span></div></div>
+    <div class="safety med"><h3>💊⚡ Watch Out!</h3><p>Some medicines don't mix: blood thinners + aspirin, water pills + antibiotics, diabetes meds + steroids. Always tell every doctor ALL the medicines you take. Call Carebridge if unsure: (248) 559-5661</p></div>
+  </div>
+</div>
+
+<!-- ===== WALLET CARD + CONTACTS ===== -->
+<div class="page" id="wallet">
+  <div class="page-hdr" style="border-bottom-color:#D97706"><h1>💳 My Emergency Wallet Card</h1><span class="icd">Cut out and keep in your wallet</span></div>
+  <div class="page-body">
+    <div class="wallet-card">
+      <div class="wc-cut">✂️ CUT HERE ✂️</div>
+      <div style="font-size:1.5rem">🚑</div>
+      <div style="font-weight:800;font-size:1rem">MY EMERGENCY CARD</div>
+      <div class="wc-grid">
+        <span>🧑 Name:</span><span contenteditable="true">_________________</span>
+        <span>🩺 Condition:</span><span contenteditable="true">_________________</span>
+        <span>💊 Allergies:</span><span contenteditable="true">_________________</span>
+        <span>📞 Carebridge:</span><span>(248) 559-5661</span>
+        <span>🚑 Emergency:</span><span>911</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REFERENCE ===== -->
+<div class="page" id="ref">
+  <div class="refooter" style="min-height:40vh;display:flex;flex-direction:column;justify-content:center">
+    <div style="font-size:2rem">📞💙</div>
+    <h2 style="font-size:1.4rem;color:#fff;margin:8px 0">Carebridge Home Health</h2>
+    <p style="font-size:1.2rem;font-weight:800;color:#fff">(248) 559-5661</p>
+    <p style="margin:8px 0">🚑 Emergency: <strong style="color:#fff">911</strong></p>
+    <p>☠️ Poison Control: <strong style="color:#fff">1-800-222-1222</strong></p>
+    <p style="margin-top:16px;background:#0F172A;padding:8px 16px;border-radius:40px;font-size:0.8rem;display:inline-block">📱 Can't reach anyone in 15 min? Go to the nearest ER</p>
+    <div class="credit-line" style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:0.7rem">✦ <span class="cr">Aadil Manzoor Rather</span> • Clinical Intake Coordinator ✦<br>© 2026 – Patient Education Guide</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggleDark(){document.body.classList.toggle('dark-mode');const d=document.body.classList.contains('dark-mode');localStorage.setItem('cb-dark',d?'1':'0')}
+if(localStorage.getItem('cb-dark')==='1')document.body.classList.add('dark-mode')
+
+function toggleFont(){document.body.classList.toggle('font-large');localStorage.setItem('cb-font',document.body.classList.contains('font-large')?'big':'')}
+if(localStorage.getItem('cb-font')==='big')document.body.classList.add('font-large')
+
+function go(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+
+function checkDaily(el,zone){el.parentElement.querySelectorAll('span').forEach(s=>s.style.background='');el.style.background='rgba(0,0,255,0.15)';let all=document.querySelectorAll('.chk-faces');let green=0,yellow=0,red=0;all.forEach(f=>{let s=f.querySelector('span');if(s&&s.style.background){if(s.style.background.includes('0,0,255'))green++;if(s.style.background.includes('255,165,0'))yellow++;if(s.style.background.includes('255,0,0'))red++}});const r=document.getElementById('dailyResult');r.style.display='block';if(red>0){r.style.background='#FEE2E2';r.style.color='#991B1B';r.innerHTML='🔴 You have RED zone symptoms → CALL 911'}else if(yellow>0){r.style.background='#FEF9C3';r.style.color='#854D0E';r.innerHTML='🟡 You have YELLOW zone symptoms → Call Carebridge at (248) 559-5661'}else if(green===6){r.style.background='#DCFCE7';r.style.color='#166534';r.innerHTML='✅ All good! You are in the GREEN zone. Keep taking care of yourself.'}else if(green>0||green+green>0){r.style.background='#FEF9C3';r.style.color='#854D0E';r.innerHTML='🟡 Some items need attention → Call Carebridge at (248) 559-5661'}}
+
+window.font-large&&document.querySelectorAll('.z-items span, .z-title, .z-call, .hotspot, .red-box *').forEach(el=>el.style.fontSize='1.1em')
+</script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carebridge AI Assessment – How Are You Feeling?</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
+.wrap{max-width:800px;width:100%;display:flex;flex-direction:column;gap:16px}
+
+/* HEADER */
+.header{text-align:center;padding:20px 16px;background:linear-gradient(135deg,#1E3A8A,#312E81);border-radius:20px;border:1px solid rgba(255,255,255,0.1)}
+.header h1{font-size:1.4rem;font-weight:800}
+.header p{font-size:0.8rem;opacity:.7;margin-top:4px}
+
+/* STICKY 911 */
+.sticky-911{position:fixed;bottom:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#7F1A1A,#DC2626);color:#fff;padding:6px 12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.75rem;font-weight:600;border-top:3px solid #FECACA}
+.sticky-911 .badge{background:#fff;color:#DC2626;padding:2px 12px;border-radius:40px;font-weight:800}
+
+/* CHAT */
+.chat-box{background:#1e293b;border-radius:20px;border:1px solid rgba(255,255,255,0.1);overflow:hidden;min-height:400px;display:flex;flex-direction:column}
+.chat-msgs{padding:16px;flex:1;overflow-y:auto;max-height:450px;display:flex;flex-direction:column;gap:12px}
+.chat-input{display:flex;gap:8px;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.1);background:#0f172a}
+.chat-input select,.chat-input button{padding:10px 16px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);font-size:0.85rem;font-weight:600;cursor:pointer}
+.chat-input select{flex:1;background:#1e293b;color:#e2e8f0;min-width:0}
+.chat-input button{background:#3B82F6;color:#fff;border:none;white-space:nowrap}
+.chat-input button:hover{background:#2563EB}
+.chat-input button:disabled{opacity:.4;cursor:default}
+
+/* BUBBLES */
+.msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:0.85rem;line-height:1.5;animation:fadeIn .3s}
+.msg-bot{background:#334155;align-self:flex-start;border-bottom-left-radius:4px}
+.msg-user{background:#1D4ED8;align-self:flex-end;border-bottom-right-radius:4px}
+.msg-opt{background:#0F3B6A;align-self:flex-start;border-left:4px solid #3B82F6;cursor:pointer}
+.msg-opt:hover{background:#1E3A8A}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* QUICK ACTIONS */
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 16px}
+.qa-btn{padding:8px 16px;border-radius:40px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#e2e8f0;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.qa-btn:hover{background:#3B82F6;color:#fff}
+
+/* RESULT */
+.result-box{border-radius:16px;padding:20px;text-align:center;display:none;margin:0 0 16px;animation:fadeIn .4s}
+.result-box.show{display:block}
+.r-green{background:#064E3B;border:2px solid #22C55E}
+.r-yellow{background:#713F12;border:2px solid #EAB308}
+.r-red{background:#7F1A1A;border:2px solid #EF4444}
+.result-box .r-icon{font-size:3rem;margin-bottom:8px}
+.result-box .r-title{font-size:1.3rem;font-weight:800;margin-bottom:4px}
+.result-box .r-desc{font-size:0.9rem;margin-bottom:10px}
+.result-box .r-action{display:inline-block;padding:10px 24px;border-radius:40px;font-weight:800;font-size:1rem;text-decoration:none}
+.r-action-911{background:#EF4444;color:#fff;font-size:1.2rem}
+.r-action-call{background:#EAB308;color:#000}
+.r-action-ok{background:#22C55E;color:#000}
+
+/* RESPONSIVE */
+@media(max-width:600px){.chat-msgs{max-height:350px}.msg{max-width:92%}}
+</style>
+</head>
+<body>
+
+<div class="sticky-911">
+  🚨 <strong>Emergency?</strong> Can't breathe? Chest pain? Face drooping?
+  <span class="badge">CALL 911 NOW</span>
+</div>
+
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>🤖 Carebridge AI Assessment</h1>
+  <p>Answer a few questions • Get your zone • Know what to do</p>
+</div>
+
+<!-- CHAT INTERFACE -->
+<div class="chat-box">
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="msg msg-bot">👋 Hi! I'm your Carebridge health assistant. I'll ask you a few questions to check how you're feeling and tell you what to do.</div>
+  </div>
+  <div class="chat-input" id="chatInputArea">
+    <select id="answerSelect">
+      <option value="">Select your answer...</option>
+    </select>
+    <button id="sendBtn" onclick="sendAnswer()">Send</button>
+  </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="quick-actions">
+  <button class="qa-btn" onclick="startAssessment('chf')">🫀 Heart (CHF)</button>
+  <button class="qa-btn" onclick="startAssessment('copd')">🫁 Lungs (COPD)</button>
+  <button class="qa-btn" onclick="startAssessment('diab')">🩸 Diabetes</button>
+  <button class="qa-btn" onclick="startAssessment('stroke')">🧠 Stroke</button>
+  <button class="qa-btn" onclick="startAssessment('wound')">🩹 Wound</button>
+  <button class="qa-btn" onclick="startAssessment('uti')">🦠 UTI</button>
+  <button class="qa-btn" onclick="startAssessment('falls')">🦴 Falls</button>
+  <button class="qa-btn" onclick="startAssessment('meds')">💊 Medication</button>
+  <button class="qa-btn" onclick="resetChat()">🔄 Start Over</button>
+</div>
+
+<!-- RESULT AREA -->
+<div id="resultArea"></div>
+
+<!-- GUIDE LINK -->
+<div style="text-align:center;font-size:0.75rem;opacity:.5;padding:12px 0 60px">
+  📋 <a href="/" target="_blank" style="color:#60a5fa">Open Full Patient Guide</a> for detailed condition information
+</div>
+
+</div>
+
+<script>
+// ===== DECISION TREES =====
+const trees = {
+  chf: {
+    name:'🫀 Heart Failure (CHF)',
+    questions:[
+      {id:'sob',text:'Are you gasping for air or can\'t catch your breath?',options:[{label:'😰 Yes, gasping for air',zone:'red'},{label:'😐 A little short of breath',zone:'yellow'},{label:'😊 No, breathing fine',zone:'green'}]},
+      {id:'chest',text:'Do you have chest pain or tightness?',options:[{label:'😰 Yes, chest pain right now',zone:'red'},{label:'😐 Mild chest tightness',zone:'yellow'},{label:'😊 No chest pain',zone:'green'}]},
+      {id:'weight',text:'Have you gained weight suddenly?',options:[{label:'😰 5+ lbs in 1 day',zone:'red'},{label:'😐 2-3 lbs in 1 day',zone:'yellow'},{label:'😊 No weight gain',zone:'green'}]},
+      {id:'swell',text:'Are your legs, ankles, or feet swollen?',options:[{label:'😰 Very swollen and painful',zone:'red'},{label:'😐 Mild swelling',zone:'yellow'},{label:'😊 No swelling',zone:'green'}]},
+      {id:'conf',text:'Do you feel confused or very sleepy?',options:[{label:'😰 Yes, very confused',zone:'red'},{label:'😐 A little more tired',zone:'yellow'},{label:'😊 Feel normal',zone:'green'}]}
+    ]
+  },
+  copd: {
+    name:'🫁 COPD / Asthma',
+    questions:[
+      {id:'talk',text:'Can you speak full sentences without stopping for air?',options:[{label:'😰 No, can\'t talk',zone:'red'},{label:'😐 Can talk but slow',zone:'yellow'},{label:'😊 Yes, speaking fine',zone:'green'}]},
+      {id:'blue',text:'Are your lips or fingernails blue or gray?',options:[{label:'😰 Yes, blue/gray',zone:'red'},{label:'😐 Not sure',zone:'yellow'},{label:'😊 No, pink and normal',zone:'green'}]},
+      {id:'inhaler',text:'Is your rescue inhaler helping?',options:[{label:'😰 Not helping at all',zone:'red'},{label:'😐 Helping a little',zone:'yellow'},{label:'😊 Yes, working fine',zone:'green'}]},
+      {id:'fever',text:'Do you have a fever (over 101°F)?',options:[{label:'😰 Yes, high fever',zone:'red'},{label:'😐 Low fever',zone:'yellow'},{label:'😊 No fever',zone:'green'}]},
+      {id:'sleepy',text:'Do you feel very sleepy or confused?',options:[{label:'😰 Yes, very sleepy',zone:'red'},{label:'😐 A bit more tired',zone:'yellow'},{label:'😊 Feel normal',zone:'green'}]}
+    ]
+  },
+  diab: {
+    name:'🩸 Diabetes',
+    questions:[
+      {id:'vomit',text:'Are you vomiting?',options:[{label:'😰 Yes, vomiting',zone:'red'},{label:'😐 Feel nauseous',zone:'yellow'},{label:'😊 No vomiting',zone:'green'}]},
+      {id:'breath',text:'Does your breath smell fruity or sweet?',options:[{label:'😰 Yes, fruity smell',zone:'red'},{label:'😐 Not sure',zone:'yellow'},{label:'😊 No, normal',zone:'green'}]},
+      {id:'sugar',text:'What was your last blood sugar reading?',options:[{label:'😰 Over 400 or very low',zone:'red'},{label:'😐 250-400 or 50-70',zone:'yellow'},{label:'😊 80-180',zone:'green'}]},
+      {id:'shake',text:'Are you shaking, sweating, or very hungry?',options:[{label:'😰 Severe and can\'t eat',zone:'red'},{label:'😐 Mild shakiness',zone:'yellow'},{label:'😊 No',zone:'green'}]},
+      {id:'vision',text:'Is your vision blurry?',options:[{label:'😰 Very blurry, can\'t see',zone:'red'},{label:'😐 A little blurry',zone:'yellow'},{label:'😊 No, vision fine',zone:'green'}]}
+    ]
+  },
+  stroke: {
+    name:'🧠 Stroke Warning',
+    questions:[
+      {id:'face',text:'Is one side of your face drooping? Ask them to smile.',options:[{label:'😰 Yes, one side droops',zone:'red'},{label:'😐 Not sure',zone:'yellow'},{label:'😊 No, both sides even',zone:'green'}]},
+      {id:'arm',text:'Can you lift both arms up?',options:[{label:'😰 One arm drifts down',zone:'red'},{label:'😐 Both go up but shaky',zone:'yellow'},{label:'😊 Yes, both strong',zone:'green'}]},
+      {id:'speech',text:'Is your speech slurred or strange?',options:[{label:'😰 Yes, slurred',zone:'red'},{label:'😐 A little off',zone:'yellow'},{label:'😊 No, speaking clear',zone:'green'}]},
+      {id:'headache',text:'Do you have a sudden severe headache?',options:[{label:'😰 Worst headache ever',zone:'red'},{label:'😐 Moderate headache',zone:'yellow'},{label:'😊 No headache',zone:'green'}]},
+      {id:'balance',text:'Do you feel dizzy or off balance?',options:[{label:'😰 Can\'t stand at all',zone:'red'},{label:'😐 A little dizzy',zone:'yellow'},{label:'😊 No, steady',zone:'green'}]}
+    ]
+  },
+  wound: {
+    name:'🩹 Wound Care',
+    questions:[
+      {id:'black',text:'Is there black or gray tissue in the wound?',options:[{label:'😰 Yes, black/gray',zone:'red'},{label:'😐 Not sure',zone:'yellow'},{label:'😊 No, looks pink',zone:'green'}]},
+      {id:'smell',text:'Does the wound smell bad?',options:[{label:'😰 Yes, bad smell',zone:'red'},{label:'😐 Slight smell',zone:'yellow'},{label:'😊 No smell',zone:'green'}]},
+      {id:'fever',text:'Do you have a fever?',options:[{label:'😰 Yes, fever over 100.4°F',zone:'red'},{label:'😐 Low temperature',zone:'yellow'},{label:'😊 No fever',zone:'green'}]},
+      {id:'redness',text:'Is the redness spreading beyond the wound?',options:[{label:'😰 Yes, spreading fast',zone:'red'},{label:'😐 A little more red',zone:'yellow'},{label:'😊 No, normal',zone:'green'}]},
+      {id:'size',text:'Is the wound getting bigger?',options:[{label:'😰 Yes, much bigger',zone:'red'},{label:'😐 Not healing as fast',zone:'yellow'},{label:'😊 Getting smaller',zone:'green'}]}
+    ]
+  },
+  uti: {
+    name:'🦠 Urinary Tract Infection (UTI)',
+    questions:[
+      {id:'back',text:'Do you have back pain below your ribs?',options:[{label:'😰 Severe back pain',zone:'red'},{label:'😐 Mild back ache',zone:'yellow'},{label:'😊 No back pain',zone:'green'}]},
+      {id:'vomit',text:'Are you vomiting?',options:[{label:'😰 Yes, vomiting',zone:'red'},{label:'😐 Feel nauseous',zone:'yellow'},{label:'😊 No',zone:'green'}]},
+      {id:'pee',text:'Can you urinate?',options:[{label:'😰 Can\'t pee at all',zone:'red'},{label:'😐 Only small amounts',zone:'yellow'},{label:'😊 Yes, normal',zone:'green'}]},
+      {id:'burn',text:'Do you have burning when you pee?',options:[{label:'😰 Severe burning',zone:'red'},{label:'😐 Mild burning',zone:'yellow'},{label:'😊 No burning',zone:'green'}]},
+      {id:'cloudy',text:'Is your urine cloudy, dark, or smells bad?',options:[{label:'😰 Yes, bloody urine',zone:'red'},{label:'😐 Cloudy/smelly',zone:'yellow'},{label:'😊 No, clear',zone:'green'}]}
+    ]
+  },
+  falls: {
+    name:'🦴 Falls & Mobility',
+    questions:[
+      {id:'head',text:'Did you hit your head?',options:[{label:'😰 Yes, hit head',zone:'red'},{label:'😐 Might have bumped it',zone:'yellow'},{label:'😊 No, didn\'t hit head',zone:'green'}]},
+      {id:'thinner',text:'Are you on blood thinners (warfarin, Eliquis, Xarelto)?',options:[{label:'😰 Yes and fell',zone:'red'},{label:'😐 Yes but didn\'t fall',zone:'yellow'},{label:'😊 No blood thinners',zone:'green'}]},
+      {id:'stand',text:'Can you stand up and bear weight?',options:[{label:'😰 Can\'t stand at all',zone:'red'},{label:'😐 Can stand but painful',zone:'yellow'},{label:'😊 Yes, standing fine',zone:'green'}]},
+      {id:'pain',text:'Do you have new pain anywhere?',options:[{label:'😰 Severe pain',zone:'red'},{label:'😐 Mild pain',zone:'yellow'},{label:'😊 No new pain',zone:'green'}]},
+      {id:'dizzy',text:'Do you feel dizzy?',options:[{label:'😰 Can\'t walk from dizziness',zone:'red'},{label:'😐 A little dizzy',zone:'yellow'},{label:'😊 No, steady',zone:'green'}]}
+    ]
+  },
+  meds: {
+    name:'💊 Medication Safety',
+    questions:[
+      {id:'overdose',text:'Did you take too many pills on accident?',options:[{label:'😰 Yes, took too many',zone:'red'},{label:'😐 Not sure',zone:'yellow'},{label:'😊 No, correct dose',zone:'green'}]},
+      {id:'allergy',text:'Do you have hives, itching, or swelling?',options:[{label:'😰 Yes, swelling/trouble breathing',zone:'red'},{label:'😐 Mild itching/rash',zone:'yellow'},{label:'😊 No',zone:'green'}]},
+      {id:'breath',text:'Are you having trouble breathing?',options:[{label:'😰 Yes, can\'t breathe',zone:'red'},{label:'😐 A little tight',zone:'yellow'},{label:'😊 No, breathing fine',zone:'green'}]},
+      {id:'miss',text:'Did you miss 2 or more doses of blood thinner or BP med?',options:[{label:'😰 Yes, missed multiple days',zone:'red'},{label:'😐 Missed 1-2 doses',zone:'yellow'},{label:'😊 No, took all doses',zone:'green'}]},
+      {id:'side',text:'Are you having new side effects from a new medicine?',options:[{label:'😰 Severe reaction',zone:'red'},{label:'😐 Mild nausea/dizzy',zone:'yellow'},{label:'😊 No side effects',zone:'green'}]}
+    ]
+  }
+};
+
+// ===== STATE =====
+let state = { condition: null, questionIndex: 0, highestZone: 'green', answers: [] };
+
+// ===== CHAT FUNCTIONS =====
+function addMsg(text, type) {
+  const el = document.createElement('div');
+  el.className = 'msg msg-' + type;
+  el.innerHTML = text;
+  document.getElementById('chatMsgs').appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setOptions(options) {
+  const sel = document.getElementById('answerSelect');
+  sel.innerHTML = '<option value="">Select your answer...</option>';
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.zone + '||' + o.label;
+    opt.textContent = o.label;
+    sel.appendChild(opt);
+  });
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInputArea').style.display = 'flex';
+}
+
+function startAssessment(cond) {
+  resetChat();
+  const tree = trees[cond];
+  if (!tree) return;
+  state.condition = cond;
+  state.questionIndex = 0;
+  state.highestZone = 'green';
+  state.answers = [];
+  
+  addMsg('Let me check your <strong>' + tree.name + '</strong> symptoms. I\'ll ask you 5 quick questions.', 'bot');
+  setTimeout(() => askQuestion(), 500);
+}
+
+function askQuestion() {
+  const tree = trees[state.condition];
+  if (!tree || state.questionIndex >= tree.questions.length) {
+    showResult();
+    return;
+  }
+  const q = tree.questions[state.questionIndex];
+  addMsg('<strong>Question ' + (state.questionIndex + 1) + ' of ' + tree.questions.length + ':</strong><br>' + q.text, 'bot');
+  setOptions(q.options);
+  // Clear previous selection
+  document.getElementById('answerSelect').value = '';
+}
+
+function sendAnswer() {
+  const sel = document.getElementById('answerSelect');
+  const val = sel.value;
+  if (!val) return;
+  
+  const [zone, label] = val.split('||');
+  const tree = trees[state.condition];
+  if (!tree) return;
+  
+  // Track highest zone
+  const zoneRank = { green: 0, yellow: 1, red: 2 };
+  if (zoneRank[zone] > zoneRank[state.highestZone]) state.highestZone = zone;
+  state.answers.push({ q: tree.questions[state.questionIndex].text, a: label, zone });
+  
+  addMsg(label, 'user');
+  state.questionIndex++;
+  
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('chatInputArea').style.display = 'none';
+  
+  setTimeout(() => {
+    if (state.questionIndex >= tree.questions.length) {
+      showResult();
+    } else {
+      askQuestion();
+    }
+  }, 600);
+}
+
+function showResult() {
+  const zone = state.highestZone;
+  const tree = trees[state.condition];
+  const area = document.getElementById('resultArea');
+  
+  let html = '<div class="result-box show ';
+  let icon, title, desc, action, actionClass;
+  
+  if (zone === 'red') {
+    html += 'r-red';
+    icon = '🚨';
+    title = '🔴 RED ZONE – EMERGENCY';
+    desc = 'Based on your answers, you may have a serious problem that needs immediate help.';
+    action = '📞 CALL 911 NOW';
+    actionClass = 'r-action-911';
+  } else if (zone === 'yellow') {
+    html += 'r-yellow';
+    icon = '⚠️';
+    title = '🟡 YELLOW ZONE – CALL TODAY';
+    desc = 'Based on your answers, you should talk to a medical professional today. Don\'t wait.';
+    action = '📞 Call Carebridge: (248) 559-5661';
+    actionClass = 'r-action-call';
+  } else {
+    html += 'r-green';
+    icon = '✅';
+    title = '🟢 GREEN ZONE – You\'re OK';
+    desc = 'Based on your answers, you are doing well. Keep taking care of yourself!';
+    action = 'Keep doing what you\'re doing';
+    actionClass = 'r-action-ok';
+  }
+  
+  html += '"><div class="r-icon">' + icon + '</div>';
+  html += '<div class="r-title">' + title + '</div>';
+  html += '<div class="r-desc">' + desc + '</div>';
+  html += '<div class="r-action ' + actionClass + '">' + action + '</div>';
+  
+  // If yellow or red, show what symptoms triggered it
+  if (zone === 'red' || zone === 'yellow') {
+    html += '<div style="margin-top:14px;font-size:0.8rem;text-align:left;background:rgba(0,0,0,0.2);border-radius:12px;padding:12px">';
+    html += '<strong>Your answers that need attention:</strong><br>';
+    state.answers.forEach(a => {
+      if (a.zone === zone || (zone === 'red' && a.zone === 'yellow')) {
+        html += '⚠️ ' + a.q + ' → <strong>' + a.a + '</strong><br>';
+      }
+    });
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  area.innerHTML = html;
+  
+  addMsg('✅ Assessment complete! <strong>Your zone: ' + title + '</strong>', 'bot');
+  addMsg('📋 <a href="/#' + state.condition + '" target="_blank" style="color:#60a5fa">Click here</a> to read more about ' + tree.name + ' in the full guide.', 'bot');
+  
+  document.getElementById('chatInputArea').style.display = 'none';
+}
+
+function resetChat() {
+  document.getElementById('chatMsgs').innerHTML = '<div class="msg msg-bot">👋 Hi! I\'m your Carebridge health assistant. I\'ll ask you a few questions to check how you\'re feeling and tell you what to do.</div>';
+  document.getElementById('resultArea').innerHTML = '';
+  state = { condition: null, questionIndex: 0, highestZone: 'green', answers: [] };
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('chatInputArea').style.display = 'none';
+  
+  // Show quick start options
+  setTimeout(() => {
+    addMsg('Which condition concerns you today? Tap one below, or type your answer:', 'bot');
+  }, 600);
+}
+
+// Start with welcome + quick options
+setTimeout(() => {
+  addMsg('Which condition concerns you today? Tap one of the buttons below:', 'bot');
+}, 800);
+</script>
+</body>
+</html>

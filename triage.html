@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Carebridge Clinical Triage</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0B1120;
+  --card: rgba(17,24,39,0.72);
+  --card-border: rgba(255,255,255,0.04);
+  --t: #F1F5F9;
+  --t2: #94A3B8;
+  --t3: #475569;
+  --accent: #6366F1;
+  --teal: #14B8A6;
+  --green: #22C55E;
+  --amber: #F59E0B;
+  --orange: #EA580C;
+  --red: #EF4444;
+  --shadow: 0 20px 60px rgba(0,0,0,0.35);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+body.light {
+  --bg: #F1F5F9;
+  --card: rgba(255,255,255,0.85);
+  --card-border: rgba(0,0,0,0.04);
+  --t: #1E293B;
+  --t2: #475569;
+  --t3: #94A3B8;
+  --shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 15% 8%, rgba(99,102,241,0.06), transparent 50%),
+    radial-gradient(ellipse at 85% 92%, rgba(20,184,166,0.04), transparent 50%);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--t);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 15px;
+  animation: fu .4s ease-out;
+}
+@keyframes fu { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* SAFETY BAR */
+.safety-bar {
+  max-width: 760px;
+  width: 100%;
+  margin: 14px auto 0;
+  border: 1px solid rgba(239,68,68,0.12);
+  background: rgba(239,68,68,0.05);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--t2);
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.safety-bar strong { color: var(--red); }
+
+.wrap { max-width: 760px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 0 18px; gap: 0; }
+
+/* HERO */
+.hdr { padding: 24px 0 8px; flex-shrink: 0; text-align: center; }
+.hi {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.2);
+}
+.hn h1 { font-size: 24px; font-weight: 700; color: var(--t); letter-spacing: -0.5px; }
+.hn .hs { font-size: 12px; color: var(--t3); text-transform: uppercase; letter-spacing: 1.4px; font-weight: 500; margin-top: 2px; }
+.hero-tagline { font-size: 14px; color: var(--t3); margin-top: 6px; letter-spacing: 0.3px; }
+.hr { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 10px; }
+.hr button {
+  padding: 4px 12px; border-radius: 6px; border: none; background: transparent;
+  color: var(--t3); cursor: pointer; font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
+  transition: all .15s;
+}
+.hr button:hover { background: rgba(255,255,255,0.04); color: var(--t2); }
+.hr { display: flex; gap: 6px; align-items: center; }
+.hr button {
+  padding: 4px 10px; border-radius: 6px; border: none; background: transparent;
+  color: var(--t3); cursor: pointer; font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
+  transition: all .15s;
+}
+.hr button:hover { background: rgba(255,255,255,0.04); color: var(--t2); }
+.trust { display: none; }
+.cg-badge { display: none; align-items: center; gap: 6px; padding: 4px 12px; margin: 8px 0 0; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.08); border-radius: 6px; font-size: 12px; color: var(--amber); }
+.cg-badge.show { display: flex; }
+.chip { display: none; margin: 4px 0; }
+.chip.show { display: block; }
+.ci { display: inline-flex; align-items: center; gap: 4px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.12); border-radius: 6px; padding: 2px 10px; font-size: 12px; font-weight: 500; color: var(--accent); }
+.ci-em { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.12); color: var(--red); }
+
+/* INTAKE CARD */
+.intake {
+  background: var(--card);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin: 24px 0 0;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+  animation: fu .5s ease-out .1s both;
+}
+.intake-title { font-size: 17px; font-weight: 700; color: var(--t); letter-spacing: -0.3px; margin-bottom: 10px; }
+.intake-title span { color: var(--teal); }
+.intake-desc { font-size: 14px; color: var(--t2); margin-bottom: 14px; line-height: 1.5; }
+
+/* CHIPS */
+.chip-group { margin-top: 10px; }
+.chip-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--t3); margin-bottom: 5px; font-weight: 600; }
+.qchips { display: flex; flex-wrap: wrap; gap: 5px; }
+.qc {
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.03);
+  background: transparent;
+  color: var(--t2);
+  font-size: 13px; cursor: pointer; transition: all .2s;
+  white-space: nowrap; font-weight: 500;
+}
+.qc:hover { background: rgba(99,102,241,0.06); color: var(--accent); border-color: rgba(99,102,241,0.1); }
+.qc-em { border-color: rgba(239,68,68,0.08); color: #FCA5A5; }
+.qc-em:hover { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.12); color: var(--red); }
+
+/* TRUST MICROCOPY */
+.trust-note { font-size: 12px; color: var(--t3); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+/* INPUT */
+.in { display: flex; gap: 8px; align-items: center; }
+.in input {
+  flex: 1; height: 62px; padding: 0 24px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.04);
+  color: var(--t); font-size: 16px; font-weight: 450;
+  outline: none; transition: all .25s;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+.in input:focus {
+  border-color: rgba(99,102,241,0.15);
+  background: rgba(99,102,241,0.04);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.06), 0 8px 32px rgba(99,102,241,0.1);
+}
+.in input::placeholder { color: var(--t3); font-weight: 400; }
+.in button {
+  width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; flex-shrink: 0;
+}
+.iv { background: rgba(255,255,255,0.04); color: var(--t2); border: 1px solid rgba(255,255,255,0.04); }
+.iv:hover { background: rgba(255,255,255,0.06); }
+.iv.on { background: var(--red); color: #fff; border-color: var(--red); animation: mp 1s infinite; }
+@keyframes mp { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.3); } 50% { box-shadow: 0 0 0 14px rgba(239,68,68,0); } }
+.ib { background: var(--accent); color: #fff; }
+.ib:hover { opacity: .9; }
+.ib:disabled { opacity: .15; }
+
+/* QUESTION FLOW - structured assessment cards */
+.c { display: flex; flex-direction: column; flex: 1; min-height: 0; margin-top: 8px; }
+.cb { flex: 1; overflow-y: auto; padding: 8px 0; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+.ch, .ci2 { display: none; }
+.cb:empty { display: flex; align-items: center; justify-content: center; min-height: 80px; }
+
+.msg { padding: 10px 16px; font-size: 14px; line-height: 1.5; animation: fi .2s; max-width: 82%; border-radius: 12px; }
+@keyframes fi { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.mb { background: rgba(255,255,255,0.03); color: var(--t); align-self: flex-start; border: 1px solid rgba(255,255,255,0.03); }
+.mu { background: var(--accent); color: #fff; align-self: flex-end; }
+.ms { align-self: center; font-size: 12px; color: var(--t3); padding: 4px 14px; max-width: 90%; text-align: center; background: rgba(255,255,255,0.02); border-radius: 20px; }
+.mt { align-self: center; font-size: 12px; color: var(--t3); padding: 3px 12px; max-width: 90%; text-align: center; }
+.mcg { background: rgba(255,255,255,0.03); color: var(--t); align-self: flex-start; border-left: 3px solid var(--amber); font-size: 14px; border: 1px solid rgba(255,255,255,0.03); }
+.mload { align-self: flex-start; font-size: 13px; color: var(--t3); padding: 6px 14px; animation: pl 1.5s infinite; }
+@keyframes pl { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+
+/* ANSWER BUTTONS */
+.aa { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px; }
+.ab {
+  padding: 8px 18px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  color: var(--t2); font-size: 13px; cursor: pointer;
+  transition: all .12s; font-weight: 500;
+}
+.ab:hover { background: rgba(99,102,241,0.1); color: var(--accent); border-color: rgba(99,102,241,0.15); }
+
+/* ZONE RESULTS */
+.rz { display: none; animation: fi .25s; margin: 6px 0; }
+.rz.show { display: block; }
+.rzg { background: linear-gradient(135deg, #052E16, #064E3B); border: 1px solid var(--green); border-radius: var(--radius-sm); padding: 24px; width: 100%; }
+.rzy { background: linear-gradient(135deg, #422006, #713F12); border: 1px solid var(--amber); border-radius: var(--radius-sm); padding: 24px; width: 100%; }
+.or-screen { display: none; animation: fi .25s; }
+.or-screen.show { display: block; margin: 6px 0; }
+.or-inner { background: linear-gradient(135deg, #431407, #7A2E0E); border: 1px solid var(--orange); border-radius: var(--radius-sm); padding: 24px; text-align: center; }
+.or-inner .rzt { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.or-inner .rzd { font-size: 14px; opacity: .85; margin-bottom: 10px; line-height: 1.5; }
+.or-inner .rza { display: inline-block; padding: 10px 24px; border-radius: 40px; font-weight: 600; font-size: 14px; text-decoration: none; }
+.rzt { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.rzc { font-size: 14px; text-align: center; opacity: .65; margin-bottom: 4px; }
+.rzd { font-size: 14px; text-align: center; opacity: .85; line-height: 1.5; margin-bottom: 10px; }
+.rza { display: inline-block; padding: 10px 26px; border-radius: 40px; font-weight: 600; font-size: 14px; text-decoration: none; margin: 4px; }
+.rz2 { background: var(--amber); color: #0F172A; }
+.rz3 { background: var(--green); color: #fff; }
+.rzt2 { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.rzt2 button {
+  padding: 6px 16px; border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02); color: var(--t2);
+  font-size: 13px; cursor: pointer; border-radius: 40px; transition: all .1s;
+}
+.rzt2 button:hover { background: rgba(255,255,255,0.05); color: var(--t); }
+
+/* Why */
+.why { display: none; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); padding: 12px; margin-top: 6px; font-size: 12px; line-height: 1.5; border: 1px solid rgba(255,255,255,0.03); }
+.why.show { display: block; }
+.why .wl { font-weight: 600; margin-bottom: 4px; color: var(--t2); font-size: 13px; }
+
+/* EMERGENCY overlay */
+.em-screen { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(69,10,10,0.95); backdrop-filter: blur(8px); align-items: center; justify-content: center; animation: fi .25s; }
+.em-screen.show { display: flex; }
+.em-inner { text-align: center; padding: 32px; max-width: 380px; width: 92%; }
+.em-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.em-desc { font-size: 14px; color: #FCA5A5; margin-bottom: 14px; line-height: 1.5; }
+.em-911 { display: block; background: #fff; color: var(--red); padding: 14px 32px; border-radius: 40px; font-weight: 700; font-size: 16px; text-decoration: none; margin: 10px auto; max-width: 240px; }
+.em-steps { text-align: left; background: rgba(0,0,0,.12); border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 10px; font-size: 13px; color: #FCA5A5; line-height: 1.6; }
+.em-steps strong { color: #fff; }
+.em-tools { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.em-tools button { padding: 6px 16px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03); color: #FCA5A5; font-size: 13px; cursor: pointer; border-radius: 40px; }
+
+/* Panels */
+.pn { display: none; background: var(--card); backdrop-filter: blur(18px); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 16px; margin: 16px 0 6px; }
+.pn.show { display: block; }
+.pn h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; text-align: center; color: var(--t2); letter-spacing: 0.5px; }
+.pg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pi { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; text-align: center; }
+.pi .pl { font-size: 11px; text-transform: uppercase; color: var(--t3); letter-spacing: .5px; }
+.pi .pv { font-size: 15px; font-weight: 600; margin: 2px 0; }
+.pi input { width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); color: var(--t); font-size: 12px; text-align: center; outline: none; }
+.hi2 { font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; justify-content: space-between; }
+.hi2:last-child { border: none; }
+.hi2 .hd { color: var(--t3); }
+.hi2 .hz { font-weight: 600; }
+
+/* Toast */
+.ts { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9999; background: rgba(15,23,42,0.95); color: var(--t); padding: 8px 20px; border-radius: 40px; font-size: 13px; border: 1px solid rgba(255,255,255,0.04); display: none; backdrop-filter: blur(12px); }
+.ts.show { display: block; }
+
+/* BELOW FOLD */
+.bw { margin: 16px 0 24px; flex-shrink: 0; }
+.bw-item { padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--t3); }
+.bw-item:first-child { border: none; }
+.bw-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+@media(max-width:560px){
+  .wrap { padding: 0 12px; }
+  .intake { padding: 16px 18px; }
+  .intake-title { font-size: 16px; }
+  .msg { max-width: 92%; font-size: 14px; }
+  .qc { padding: 6px 12px; font-size: 13px; }
+  .in input { height: 50px; font-size: 15px; padding: 0 16px; }
+  .in button { width: 42px; height: 42px; }
+  .hn h1 { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hdr">
+  <div class="hi">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  </div>
+  <div class="hn"><h1>Carebridge</h1><div class="hs">Clinical Triage System</div></div>
+  <div class="hero-tagline">AI-assisted clinical risk assessment</div>
+  <div class="hr">
+    <button onclick="tP('vitals')">Vitals</button>
+    <button onclick="tP('history')">History</button>
+    <button onclick="toDark()">Theme</button>
+  </div>
+  <div class="cg-badge" id="cgBadge">You are answering <strong>for someone else</strong></div>
+  <div class="chip" id="cc"><div class="ci" id="cci"></div></div>
+</div>
+
+<div class="safety-bar">If this is a life-threatening emergency, <strong>call emergency services immediately</strong></div>
+
+<!-- INTAKE CARD -->
+<div class="intake">
+  <div class="intake-title">What <span>brought you here</span> today?</div>
+  <div class="intake-desc">Describe your symptoms or select a quick concern below.</div>
+  <div class="in">
+    <input type="text" id="ti" placeholder="Describe your symptoms..." onkeydown="if(event.key==='Enter')send()">
+    <button class="iv" id="vb" onclick="tV()" title="Voice"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
+    <button class="ib" id="sb" onclick="send()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+  </div>
+  <div class="chip-group" id="welcomeChips">
+    <div class="chip-label">Urgent symptoms</div>
+    <div class="qchips">
+      <button class="qc qc-em" onclick="sendText('I have chest pain or pressure')">Chest pain</button>
+      <button class="qc qc-em" onclick="sendText('I am having trouble breathing')">Difficulty breathing</button>
+    </div>
+    <div class="chip-label">Common concerns</div>
+    <div class="qchips">
+      <button class="qc" onclick="sendText('I have a fever and feel sick')">Fever</button>
+      <button class="qc" onclick="sendText('I fell down and need help')">Fall / injury</button>
+      <button class="qc" onclick="sendText('My blood sugar is high')">Blood sugar</button>
+      <button class="qc" onclick="sendText('I have a bad headache')">Headache</button>
+      <button class="qc" onclick="sendText('I have a medication concern')">Medication</button>
+    </div>
+  </div>
+  <div class="trust-note">This assessment uses clinical risk indicators and does not replace emergency medical care.</div>
+</div>
+
+<!-- VITALS PANEL -->
+<div class="pn" id="pnVitals">
+  <h3>Vital Signs (US Clinical Standards)</h3>
+  <div class="pg" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="pi"><div class="pl">Temperature</div><div class="pv" id="vT">--</div><input placeholder="°F" onchange="sV('temp',this.value)"></div>
+    <div class="pi"><div class="pl">Heart Rate</div><div class="pv" id="vHR">--</div><input placeholder="bpm" onchange="sV('hr',this.value)"></div>
+    <div class="pi"><div class="pl">Blood Pressure</div><div class="pv" id="vBP">--</div><input placeholder="systolic/diastolic" onchange="sV('bp',this.value)"></div>
+    <div class="pi"><div class="pl">Resp. Rate</div><div class="pv" id="vRR">--</div><input placeholder="breaths/min" onchange="sV('rr',this.value)"></div>
+    <div class="pi"><div class="pl">O2 Sat</div><div class="pv" id="vO2">--</div><input placeholder="%" onchange="sV('o2',this.value)"></div>
+    <div class="pi"><div class="pl">Blood Sugar</div><div class="pv" id="vS">--</div><input placeholder="mg/dL" onchange="sV('sugar',this.value)"></div>
+  </div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="pn" id="pnHistory">
+  <h3>Past Assessments</h3>
+  <div id="hl"><div style="text-align:center;font-size:0.6rem;color:var(--t3)">None yet</div></div>
+  <div style="text-align:center;margin-top:8px"><button class="ab" onclick="if(confirm('Clear?')){localStorage.removeItem('cb-h');loadH()}">Clear</button></div>
+</div>
+
+<!-- CONVERSATION AREA -->
+<div class="c">
+  <div class="cb" id="cb"></div>
+  <div class="aa" id="aa"></div>
+</div>
+
+<div id="ra"></div>
+<div id="emArea"></div>
+
+<!-- BELOW FOLD -->
+<div class="bw">
+  <div class="bw-item"><span class="bw-dot"></span> Emergency symptoms monitored — chest pain, stroke signs, severe breathing difficulty</div>
+  <div class="bw-item"><span class="bw-dot"></span> Medication interactions analyzed — blood thinners, insulin, opioids, antibiotics</div>
+  <div class="bw-item"><span class="bw-dot"></span> High-risk vital signs prioritized — temperature, heart rate, oxygen, blood pressure, glucose</div>
+</div>
+
+  <!-- CREDIT -->
+  <div style="text-align:center;padding:20px 0 30px;font-size:12px;color:var(--t3);border-top:1px solid rgba(255,255,255,0.03);margin-top:auto">
+    Designed &amp; developed by Aadil Manzoor Rather — Clinical Intake Coordinator
+  </div>
+
+</div>
+
+<div class="ts" id="ts"></div>
+
+<script src="diseases.js"></script>
+<script>
+// ===== LOCALE CONFIG =====
+const LOCALE = {
+  country: 'US',
+  emergency: '911',
+  emergency_alt: '112',
+  er_label: 'Emergency Room',
+  urgent_label: 'Urgent Care',
+  poison_control: '1-800-222-1222',
+  carebridge: '(248) 559-5661'
+};
+
+// ===== US VITAL SIGN REFERENCE (6-tier) — used by both AI prompts =====
+const VITALS_REF = `
+US Adult Vital Sign Reference (3-tier: GREEN / URGENT / EMERGENCY):
+Temperature (F): GREEN 95-99.5°F | URGENT 100.4-103.9°F | EMERGENCY >=104°F or <95°F+ symptoms
+Heart rate (bpm): GREEN 60-100 | URGENT 101-120 or 50-59+symptoms | EMERGENCY >130 or <40 or +chest pain/fainting/SOB
+BP (mmHg): GREEN 90/60-129/84 | URGENT 130-179 sys or 85-119 dia | EMERGENCY >=180/120 + symptoms
+RR (/min): GREEN 12-20 | URGENT 21-24 | EMERGENCY >30 or <8
+O2 sat (%): GREEN >=95 | URGENT 90-94 | EMERGENCY <90
+Blood glucose (mg/dL): GREEN 70-140 | URGENT 180-399 | EMERGENCY >=400 or <54 or +symptoms`;
+
+// ===== CANARY / OVERRIDE RULES =====
+const OVERRIDES = [
+  // Stroke signs
+  { id:'stroke', pattern:['face droop','face drooping','can\'t lift arm','arm weakness','slurred speech','cant speak','confused sudden'], combo:false },
+  // Chest pain + SOB
+  { id:'cardiac', pattern:['chest pain','chest tight','chest pressure'], combo:true, with:['short of breath','cant breathe','gasping','sob','breathless'] },
+  // Anticoag + head trauma
+  { id:'anticoag_trauma', pattern:['blood thinner','warfarin','eliquis','xarelto','coumadin'], combo:true, with:['fall','hit head','head injury','bumped head','fell'] },
+  // Anaphylaxis
+  { id:'anaphylaxis', pattern:['hives','swelling','trouble breathing'], combo:true, with:['severe','allergic','after eating','after med'] },
+  // Severe resp distress
+  { id:'resp_distress', pattern:['gasping','can\'t breathe','choking','blue lips'], combo:false },
+  // Severe bleeding
+  { id:'bleeding', pattern:['bleeding badly','bleeding won\'t stop','gushing','blood spraying','severe bleeding'], combo:false },
+  // Unconscious
+  { id:'unconscious', pattern:['passed out','unconscious','can\'t wake','won\'t wake','not responding'], combo:false },
+  // Seizure
+  { id:'seizure', pattern:['seizure','fitting','convulsing'], combo:false },
+  // Suicidal
+  { id:'suicide', pattern:['suicidal','want to die','kill myself','end my life','suicide'], combo:true, with:['plan','access','gun','pills','means'] },
+  // Meningitis
+  { id:'meningitis', pattern:['worst headache','stiff neck','light sensitivity'], combo:true, with:['fever','rash'] }
+];
+
+// ===== MEDICATION INTERACTION PATTERNS =====
+const MED_INTERACTIONS = [
+  { med:'warfarin|eliquis|xarelto|coumadin|blood thinner', danger:'black stool|bloody stool|tarry|vomit blood|coffee ground', risk:'GI BLEED', override:'Possible GI bleeding — on blood thinner with symptoms' },
+  { med:'insulin|diabetes med|metformin|glipizide', danger:'vomiting|confused|fruity breath|rapid breathing|very high sugar', risk:'DKA / METABOLIC', override:'Possible metabolic emergency — diabetic with symptoms' },
+  { med:'opioid|pain pill|morphine|oxycodone|fentanyl', danger:'slow breathing|sleepy|hard to wake|pinpoint pupils', risk:'OVERDOSE', override:'Possible opioid emergency — breathing or consciousness affected' },
+  { med:'antibiotic|amoxicillin|cipro|bactrim', danger:'new confusion|diarrhea|watery stool', risk:'CDIFF / SEPSIS', override:'Possible serious reaction — on antibiotics with new symptoms' },
+  { med:'steroid|prednisone|dexamethasone', danger:'high sugar|confusion|vomiting', risk:'STEROID COMPLICATION', override:'Possible steroid complication — metabolic symptoms' }
+];
+
+// ===== MINIMIZATION PHRASES =====
+const MINIMIZATION = ['it\'s nothing','probably fine','just stress','don\'t want to overreact','i\'m okay','probably anxiety','i don\'t want to bother','it\'s silly','i feel silly','i\'m overreacting','it\'s probably nothing','not a big deal'];
+
+// ===== CAREGIVER TRIGGERS =====
+const CAREGIVER = ['my mother','my father','my grandmother','my grandfather','my mom','my dad','my wife','my husband','my son','my daughter','my child','my baby','my patient','my aunt','my uncle','my friend'];
+
+// ===== PEDIATRIC DANGER SIGNS =====
+const PED_DANGER = ['not feeding','won\'t eat','no urine','inconsolable','grunting','lethargic','hard to wake','floppy','listless'];
+
+// ===== STATE =====
+let S = {
+  msg:[],          // conversation history [{role,text}]
+  step: 0,         // 0=waiting, 1=processing, 2=awaiting_answer, 99=done
+  zone: null,
+  primary: null,    // primary risk cluster
+  secondary: null,  // secondary risk cluster
+  score: 0,
+  reliability: 'high', // high|moderate|low
+  caregiver: false,
+  minimizations: 0,
+  contradictions: 0,
+  time_course: null,  // sudden|gradual|worsening|improving|intermittent
+  dominant_symptom: null,
+  scores: { cardiac:0, infection:0, metabolic:0, neuro:0, psych:0, gi:0 },
+  decision_log: [],
+  patient_factors: { elderly:false, child:false, pregnant:false, anticoagulant:false, diabetic:false, immunocompromised:false },
+  question_count: 0,
+  askedQuestions: null,
+  override_fired: null,
+  measurements: {},  // { temperature: 101, bloodSugar: 250, bp: {systolic, diastolic}, oxygen: 95 }
+  _rateLimited: 0,   // timestamp of last 429, 0 = not rate limited
+  _tempUnusuallyLow: 0,   // set when reported temp is 85-91°F (unlikely body temp)
+  _askedNeutralFollowUp: false,  // set when neutral follow-up asked
+  _askedWhatSymptoms: false,     // set when asked "what other symptoms" after Yes
+  _hrUnusuallyLow: 0,      // set when reported HR is 20-39 bpm
+  _rrUnusuallyLow: 0,      // set when reported RR is 5-9/min
+  _gluUnusuallyLow: 0      // set when reported BG is 20-59 mg/dL
+};
+
+let rec = null, listening = false;
+
+// ===== HELPERS =====
+function esc(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML}
+function aM(h,t){
+  const e=document.createElement('div');e.className='msg '+t;
+  if(t==='mu') e.textContent = h; // User messages — textContent prevents XSS
+  else e.innerHTML = h;
+  document.getElementById('cb').appendChild(e);
+  e.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function aS(t){aM(t,'ms')}
+function ts(t){const e=document.getElementById('ts');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
+function en(v){document.getElementById('ti').disabled=!v;document.getElementById('sb').disabled=!v}
+
+function log(entry){
+  entry.t = new Date().toISOString();
+  S.decision_log.push(entry);
+  if(window.location.search.includes('debug')) console.log('[TRIAGE]', entry);
+}
+
+// ===== MATCH ANY KEYWORD =====
+function hasAny(text,list){const l=text.toLowerCase();return list.some(k=>l.includes(k))}
+
+function countMatches(text,list){const l=text.toLowerCase();return list.filter(k=>l.includes(k)).length}
+
+// Negation-aware text: strip "no X" phrases before keyword matching
+function stripNegations(text){
+  return text.replace(/\b(?:no|no |denies|without|don't have|dont have|never had|not having|no more)\s+(?:\w+\s+){0,2}?(?=chest pain|fever|headache|pain|nausea|vomiting|dizziness|shortness|breathing|cough|sugar|symptoms|bleeding|injury|fall|wound)/gi, ' ');
+}
+
+function extractNumbers(text){
+  const m=text.match(/\d{2,3}(\.\d)?/g);
+  return m?m.map(parseFloat):[];
+}
+
+// Context-aware number extraction: match numbers near relevant keywords
+function extractMeasurements(text){
+  const l=text.toLowerCase();
+  const nums=extractNumbers(text);
+  const m={};
+  // Temperature — capture all plausible readings 85-110°F; values 85-91 are flagged for verification
+  if(hasAny(l,['temp','temperature','fever','degree','thermometer','body'])){
+    const temps=nums.filter(n=>n>=85&&n<=110);
+    if(temps.length>0) m.temperature=Math.max(...temps);
+  }
+  // Blood sugar (wide range to capture mild low to critical high)
+  if(hasAny(l,['sugar','glucose','blood sugar','diabetes','diabetic'])){
+    const sugars=nums.filter(n=>n>=10&&n<=900);
+    if(sugars.length>0) m.bloodSugar=Math.max(...sugars);
+  }
+  // Oxygen saturation
+  if(hasAny(l,['o2','oxygen','saturation','spo2','pulse ox','oximeter'])){
+    const o2s=nums.filter(n=>n>=50&&n<=100);
+    if(o2s.length>0) m.oxygen=Math.min(...o2s);
+  }
+  // Blood pressure (systolic/diastolic pattern)
+  const bpMatch=text.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if(bpMatch) m.bp={systolic:parseInt(bpMatch[1]), diastolic:parseInt(bpMatch[2])};
+  // Pulse/heart rate (expanded low for bradycardia detection)
+  if(hasAny(l,['pulse','heart rate','bpm','hr','heartbeat','tachycardia','bradycardia'])){
+    const pulses=nums.filter(n=>n>=20&&n<=260);
+    if(pulses.length>0) m.pulse=Math.max(...pulses);
+  }
+  // Respiratory rate
+  if(hasAny(l,['breathing','respiratory','breaths','resp rate','rr','respirations'])){
+    const resp=nums.filter(n=>n>=4&&n<=70);
+    if(resp.length>0) m.respRate=Math.max(...resp);
+  }
+  // Detect patient age (for context, not a vital sign)
+  const ageMatch = l.match(/(\d{1,3})\s*(?:year old|years old|yo|yr|age)/);
+  if(ageMatch) m._patientAge = parseInt(ageMatch[1]);
+  
+  return m;
+}
+
+// ===== CAREGIVER DETECTION =====
+function detectCaregiver(text){
+  const l=text.toLowerCase();
+  for(const c of CAREGIVER){if(l.includes(c))return true}
+  return false;
+}
+
+// ===== CANARY — STAGE 1 =====
+function runCanary(text,numbers){
+  const l=text.toLowerCase();
+  log({phase:'canary_start',text:l.slice(0,80)});
+
+    // Check override combos
+    for(const ov of OVERRIDES){
+      const hasPattern = hasAny(l, ov.pattern);
+      if(!hasPattern) continue;
+      // Non-combo overrides fire on pattern match alone
+      if(!ov.combo){
+        log({phase:'canary_override_fired',override:ov.id,reason:'pattern match'});
+        return { override: ov.id, zone: 'red' };
+      }
+      // Combo overrides require BOTH pattern AND the with-list
+      if(ov.combo && ov.with && hasAny(l, ov.with)){
+        log({phase:'canary_override_fired',override:ov.id,reason:'combo match'});
+        return { override: ov.id, zone: 'red' };
+      }
+      // Also fire for suicidal ideation (no physical combo needed)
+      if(ov.combo && !ov.with){
+        log({phase:'canary_override_fired',override:ov.id,reason:'pattern match (combo type, no with-list)'});
+        return { override: ov.id, zone: 'red' };
+      }
+      // Combo with `with` list but partner not found — do NOT fire
+      log({phase:'canary_override_skipped',override:ov.id,reason:'combo with-list not matched',with:ov.with});
+    }
+
+  // Check medication interactions
+  for(const mi of MED_INTERACTIONS){
+    const hasMed = l.match(new RegExp(mi.med,'i'));
+    const hasDanger = l.match(new RegExp(mi.danger,'i'));
+    if(hasMed && hasDanger){
+      log({phase:'canary_med_interaction',med:mi.med,risk:mi.risk});
+      return { override: mi.override, zone: 'red' };
+    }
+  }
+
+  // ==================================================================
+  // VITAL SIGNS INTERPRETATION ENGINE — 3-Tier (NORMAL / URGENT / EMERGENCY)
+  // ==================================================================
+  // Follows standard emergency triage: mildly abnormal alone ≠ emergency.
+  // Symptoms + context required for escalation.
+  // ==================================================================
+
+  // Helpers — range checkers
+  const anyIn = (lo,hi) => numbers.some(n => n>=lo && n<=hi);
+  const maxIn = (lo,hi) => Math.max(...numbers.filter(n=>n>=lo&&n<=hi),0);
+  const minIn = (lo,hi) => Math.min(...numbers.filter(n=>n>=lo&&n<=hi),999);
+
+  // Symptom combo helpers
+  const hasSx = (...words) => hasAny(l, words);
+  const n = (text) => text.toLowerCase();
+
+  // ==================================================================
+  // 1. BODY TEMPERATURE (°F) — urgent findings return orange to stop questions immediately
+  // Normal 95-99.5 | Urgent 100.4-103.9 | Emergency >=104 or <95+ symptoms
+  // Hypothermia starts <95°F, but needs symptoms for emergency routing.
+  // ==================================================================
+  const tempCtx = ['temp','temperature','fever','degree','thermometer','body'];
+  if(hasAny(l, tempCtx)){
+    const t = maxIn(85,110);
+    if(t){
+      if(t >= 104){ // 🔴 EMERGENCY: hyperpyrexia
+        return { override: `Temperature ${t}°F (≥104°F) — medical emergency`, zone:'red' };
+      }
+      if(t >= 100.4 && t < 104){ // 🟠 URGENT: fever — show result, no follow-up questions
+        return { override: `Temperature ${t}°F — fever detected, medical review advised`, zone:'orange' };
+      }
+      if(t > 99.5 && t < 100.4){ log({phase:'temp_high_normal',temp:t}); }
+      if(t >= 95 && t <= 99.5){ log({phase:'temp_normal',temp:t}); }
+      if(t >= 90 && t < 95){ // Below normal
+        const hypo = hasSx('confused','shivering','weak','weakness','altered','drowsy','lethargic','unconscious','pale','cold skin');
+        if(hypo) return { override: `Temperature ${t}°F (<95°F) with symptoms — hypothermia concern`, zone:'red' };
+        return { override: `Temperature ${t}°F — below normal range, medical review advised`, zone:'orange' };
+      }
+      if(t >= 85 && t < 90){ log({phase:'temp_very_low',temp:t}); S._tempUnusuallyLow = t; }
+    }
+  }
+
+  // ==================================================================
+  // 2. OXYGEN SATURATION (%)
+  // Normal ≥95 | Urgent 90-94 | Emergency <90
+  // ==================================================================
+  const o2Ctx = ['o2','oxygen','saturation','spo2','pulse ox','oximeter'];
+  if(hasAny(l, o2Ctx)){
+    const o2 = minIn(50,100);
+    if(o2 && o2 <= 100){
+      if(o2 < 90){ // 🔴 EMERGENCY: <90%
+        const sob = hasSx('short of breath','sob','breathless',"can't breathe",'gasping','dyspnea','trouble breathing');
+        if(sob) return { override: `O2 saturation ${o2}% (<90%) + breathing difficulty — emergency`, zone:'red' };
+        return { override: `O2 saturation ${o2}% (<90%) — emergency`, zone:'red' };
+      }
+      if(o2 >= 90 && o2 <= 94){ // 🟠 URGENT — show result immediately
+        return { override: `O2 saturation ${o2}% (90-94% range) — medical evaluation advised`, zone:'orange' };
+      }
+      if(o2 >= 95){ log({phase:'o2_normal',o2}); } // 🟢 NORMAL
+    }
+  }
+
+  // ==================================================================
+  // 3. HEART RATE (bpm)
+  // Normal 60-100 | Urgent 101-120 or 50-59+symptoms | Emergency >130 or <40 or +chest pain/fainting/SOB
+  // ==================================================================
+  const hrCtx = ['pulse','heart rate','bpm','hr','heartbeat'];
+  if(hasAny(l, hrCtx)){
+    const hr = maxIn(20,250);
+    if(hr){
+      const chestPain = hasSx('chest pain','chest tight','chest pressure');
+      const fainting = hasSx('faint','fainting','passed out','syncope','near syncope');
+      const severeDizzy = hasSx('severe dizziness','dizzy','lightheaded','vertigo');
+      const sob = hasSx('short of breath','sob','breathless','dyspnea','trouble breathing');
+
+      if(hr > 130 || hr < 40 || ((hr < 50 || hr > 100) && (chestPain || fainting || severeDizzy || sob))){
+        // 🔴 EMERGENCY
+        let reason = '';
+        if(hr > 130) reason = `Heart rate ${hr} bpm (>130 bpm)`;
+        else if(hr < 40) reason = `Heart rate ${hr} bpm (<40 bpm)`;
+        else reason = `Heart rate ${hr} bpm with symptoms`;
+        return { override: `${reason} — emergency`, zone:'red' };
+      }
+      if(hr >= 101 && hr <= 120){ // 🟠 URGENT — show result immediately
+        return { override: `Heart rate ${hr} bpm — elevated, medical evaluation advised`, zone:'orange' };
+      }
+      if(hr >= 50 && hr <= 59){ // 🟢 Normal for athletes; 🟠 if symptomatic
+        if(chestPain || fainting || severeDizzy || sob)
+          return { override: `Heart rate ${hr} bpm (50-59) with symptoms — medical evaluation needed`, zone:'orange' };
+        log({phase:'hr_low_normal',hr,note:'50-59 bpm — normal variant, no symptoms'});
+      }
+      if(hr >= 40 && hr <= 49){ // 🔴 Bradycardic — potentially life-threatening
+        return { override: `Heart rate ${hr} bpm — critically low heart rate, emergency care needed`, zone:'red' };
+      }
+      if(hr >= 60 && hr <= 100){ log({phase:'hr_normal',hr}); } // 🟢 NORMAL
+      if(hr >= 20 && hr < 40){ // Ask to verify
+        log({phase:'hr_very_low',hr,note:'20-39 bpm — verify reading'});
+        S._hrUnusuallyLow = hr;
+      }
+    }
+  }
+
+  // ==================================================================
+  // 4. RESPIRATORY RATE (/min)
+  // Normal 12-20 | Urgent 21-24 | Emergency >30 or <8
+  // ==================================================================
+  const rrCtx = ['breathing','respiratory','breaths','resp rate','rr','respirations'];
+  if(hasAny(l, rrCtx)){
+    const rr = maxIn(5,60);
+    if(rr){
+      if(rr > 30 || rr < 8){ // 🔴 EMERGENCY
+        if(rr > 30) return { override: `Respiratory rate ${rr}/min (>30) — emergency`, zone:'red' };
+        if(rr < 8) return { override: `Respiratory rate ${rr}/min (<8) — emergency`, zone:'red' };
+      }
+      if(rr >= 21 && rr <= 24){ // 🟠 URGENT — show result immediately
+        return { override: `Respiratory rate ${rr}/min — elevated, medical evaluation advised`, zone:'orange' };
+      }
+      if(rr >= 12 && rr <= 20){ log({phase:'rr_normal',rr}); } // 🟢 NORMAL
+      if(rr >= 8 && rr < 12){ // Low-normal, monitor
+        log({phase:'rr_low_normal',rr,note:'8-11/min — monitor'});
+      }
+      if(rr >= 5 && rr < 8){ // Unusually low — verify
+        log({phase:'rr_very_low',rr,note:'5-7/min — verify reading'});
+        S._rrUnusuallyLow = rr;
+      }
+    }
+  }
+
+  // ==================================================================
+  // 5. BLOOD PRESSURE (mmHg)
+  // Normal 90/60-129/84 | Urgent 130-179 sys or 85-119 dia | Emergency ≥180/120 + symptoms
+  // High BP alone without symptoms does NOT require 911.
+  // ==================================================================
+  const bpMatch = text.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if(bpMatch){
+    const sys = parseInt(bpMatch[1]), dia = parseInt(bpMatch[2]);
+    const bpCtx = ['bp','blood pressure','pressure','hypertension','hypotension','sys','dia'];
+    if(hasAny(l, bpCtx)){
+      const bpSx = hasSx('chest pain','chest tight','chest pressure','headache severe','vision change','blurred vision','short of breath','sob','confused','confusion','neuro','numb','weak','slurred speech');
+
+      if((sys >= 180 || dia >= 120) && bpSx){ // 🔴 EMERGENCY with symptoms
+        return { override: `BP ${sys}/${dia} (≥180/120) with symptoms — hypertensive emergency`, zone:'red' };
+      }
+      if(sys >= 180 || dia >= 120){ // Elevated but NO symptoms
+        return { override: `BP ${sys}/${dia} — very high, medical evaluation advised (not a 911 emergency unless symptoms present)`, zone:'orange' };
+      }
+      if((sys >= 130 && sys <= 179) || (dia >= 85 && dia <= 119)){ // 🟠 URGENT
+        return { override: `BP ${sys}/${dia} — elevated, medical evaluation advised`, zone:'orange' };
+      }
+      if(sys >= 90 && sys <= 129 && dia >= 60 && dia <= 84){ log({phase:'bp_normal',bp:`${sys}/${dia}`}); }
+      if(sys < 80 && sys > 30){ // 🔴 Shock concern (<80 systolic regardless of diastolic)
+        return { override: `BP ${sys}/${dia} — critically low blood pressure, shock risk — emergency`, zone:'red' };
+      }
+      if(sys >= 80 && sys < 90){ // 🟠 Low BP
+        return { override: `BP ${sys}/${dia} — low blood pressure, medical evaluation advised`, zone:'orange' };
+      }
+    }
+  }
+
+  // ==================================================================
+  // 6. BLOOD GLUCOSE (mg/dL)
+  // Normal 70-140 | Urgent 180-399 | Emergency ≥400 or <54 or +symptoms
+  // ==================================================================
+  const sugarCtx = ['sugar','glucose','diabetes','diabetic','blood sugar'];
+  if(hasAny(l, sugarCtx)){
+    const glu = maxIn(20,800);
+    if(glu){
+      const gluSx = hasSx('confused','confusion','unconscious','passed out','seizure','vomiting','severe dehydration','fruity breath','rapid breathing');
+      const dkaSx = hasSx('vomiting','confused','fruity breath','rapid breathing','dehydrated','nausea');
+
+      if(glu >= 400 || (glu < 54 && glu > 10) || (glu < 60 && gluSx)){ // 🔴 EMERGENCY
+        if(glu >= 400){
+          if(dkaSx) return { override: `Blood glucose ${glu} mg/dL (≥400) + symptoms — DKA/HHS emergency`, zone:'red' };
+          return { override: `Blood glucose ${glu} mg/dL (≥400) — emergency`, zone:'red' };
+        }
+        return { override: `Blood glucose ${glu} mg/dL (<54) — dangerously low, emergency care needed`, zone:'red' };
+      }
+      if(glu >= 180 && glu <= 399){ // 🟠 URGENT — show result immediately
+        return { override: `Blood glucose ${glu} mg/dL — elevated, medical evaluation advised`, zone:'orange' };
+      }
+      if(glu >= 70 && glu <= 140){ log({phase:'glu_normal',sugar:glu}); }
+      if(glu >= 60 && glu <= 69){ // Mild low
+        return { override: `Blood glucose ${glu} mg/dL — low, medical evaluation advised`, zone:'orange' };
+      }
+      if(glu >= 54 && glu < 60 && !gluSx){ // Low without symptoms
+        log({phase:'glu_low_no_sx',sugar:glu,note:'54-59 mg/dL without symptoms — monitor'});
+      }
+      if(glu >= 20 && glu < 54){ // Unusually low — verify
+        log({phase:'glu_very_low',sugar:glu,note:'20-53 mg/dL — verify reading'});
+        S._gluUnusuallyLow = glu;
+      }
+    }
+  }
+
+  // Check subjective/objective conflict (silent hypoxia)
+  if(hasAny(l,['o2','oxygen','saturation','spo2']) && hasAny(l,['fine','ok','normal','feel fine']) && (hasAny(l,['8','9']) || anyIn(80,94))){
+    return { override: 'Low O2 reported but patient feels fine — verify device reading', zone:'red' };
+  }
+
+  // Check confusion — standalone red flag (neurological or metabolic emergency)
+  if(hasAny(l,['confusion','confused','disoriented','altered mental status','not acting right','not themselves'])){
+    if(hasAny(l,['elderly','diabetic','infection','fever','head injury','diabetes','sugar']))
+      return { override: 'Confusion with risk factors — possible emergency, immediate evaluation needed', zone:'red' };
+    return { override: 'Confusion reported — medical evaluation needed to determine cause', zone:'orange' };
+  }
+
+  // Check fracture/broken bone — any mention of broken bone or fracture is at least ORANGE
+  if(hasAny(l,['broke','broken','fracture','fractured','snapped','cracked a bone','cracked my','dislocated','dislocate'])){
+    return { override: 'Possible fracture or broken bone — medical evaluation needed', zone:'orange' };
+  }
+
+  // Check fall/injury — falls are high-risk, escalate immediately
+  if(hasAny(l,['fell','fall','fallen','tripped','slipped','fell down','felt down','fall down','fell off','fell from','i fell','i fall','i slipped','i tripped'])){
+    const headImpact = hasAny(l,['hit head','hit my head','head injury','bumped head','headache','head pain','unconscious','passed out','fainted','confused','confusion','dizzy','vision blur','nausea','vomit']);
+    const elderly = hasAny(l,['elderly','old','senior','70','75','80','85','90','grandma','grandpa']);
+    const bloodThinner = hasAny(l,['blood thinner','warfarin','eliquis','xarelto','coumadin','aspirin','anticoagulant']);
+    const cantWalk = hasAny(l,["can't walk","cannot walk","can't stand","cannot stand","can't get up","cannot get up","leg pain","hip pain","unable to stand"]);
+    if(headImpact || elderly || bloodThinner || cantWalk){
+      return { override: 'Fall with risk factors — head injury or high-risk patient — emergency evaluation needed', zone:'red' };
+    }
+    return { override: 'Fall reported — medical evaluation advised to rule out injury', zone:'orange' };
+  }
+
+  // Check pediatric danger signs
+  if(hasAny(l, CAREGIVER) && hasAny(l, PED_DANGER)){
+    return { override: 'Possible pediatric emergency — urgent symptoms reported', zone:'red' };
+  }
+
+  log({phase:'canary_clear'});
+  return null;
+}
+
+// ===== CONTEXT EXTRACTOR — STAGE 2 =====
+function extractContext(text){
+  const l=text.toLowerCase();
+  const ctx = {
+    caregiver: detectCaregiver(text),
+    female: hasAny(l,['woman','female','she','her','lady','girl']),
+    elderly: countMatches(l,['elderly','old','70','75','80','85','90','senior','aged']) > 0,
+    child: countMatches(l,['child','baby','infant','toddler','kid','year old','months old']) > 0,
+    pregnant: l.includes('pregnant')||l.includes('pregnancy'),
+    smoker: hasAny(l,['smoker','smoking','smoke','cigarette','tobacco']),
+    anticoagulant: hasAny(l,['warfarin','eliquis','xarelto','coumadin','blood thinner','anticoagulant']),
+    diabetic: hasAny(l,['diabetes','diabetic','insulin','sugar','glucose']),
+    immunocompromised: hasAny(l,['chemo','transplant','hiv','immunosuppressed','cancer treatment','steroid']),
+    time_course: null,
+    minimizations: 0,
+    reliability_drops: 0
+  };
+
+  // Time course detection
+  if(hasAny(l,['sudden','suddenly','all of a sudden','immediately','instant'])) ctx.time_course = 'sudden';
+  else if(hasAny(l,['gradual','slowly','over time','weeks','months'])) ctx.time_course = 'gradual';
+  else if(hasAny(l,['worsening','getting worse','more painful','harder to','increasing'])) ctx.time_course = 'worsening';
+  else if(hasAny(l,['intermittent','comes and goes','on and off'])) ctx.time_course = 'intermittent';
+  else if(hasAny(l,['improving','getting better','less pain'])) ctx.time_course = 'improving';
+
+  // Minimization detection
+  for(const m of MINIMIZATION){
+    if(l.includes(m)) ctx.minimizations++;
+  }
+
+  // Uncertainty = reliability drop
+  if(hasAny(l,['maybe','not sure','kind of','i think','possibly','perhaps','don\'t know','idk','uncertain'])) ctx.reliability_drops++;
+
+  // Contradiction check against previous messages
+  if(S.msg.length > 1){
+    const prev = S.msg.filter(m=>m.role==='user').map(m=>m.text.toLowerCase());
+    const curr = l;
+    if((prev.some(p=>p.includes('fell')||p.includes('fall')||p.includes('did fall')) && curr.includes('didn\'t fall') && !curr.includes('didn\'t fall?') ) ||
+       (prev.some(p=>p.includes('yes')||p.includes('had')) && curr.includes('never had') )){
+      ctx.reliability_drops += 2;
+      S.contradictions++;
+      log({phase:'contradiction_detected',prev:prev.slice(-1)[0],curr});
+    }
+  }
+
+  return ctx;
+}
+
+// ===== RISK CLUSTER SCORING — STAGE 3 =====
+function scoreClusters(text, ctx, numbers){
+  const l=text.toLowerCase();
+  const clean = stripNegations(l); // Strip negated phrases for keyword scoring
+  const scores = { cardiac:0, infection:0, metabolic:0, neuro:0, psych:0, gi:0 };
+
+  // CARDIAC — using negation-stripped text for symptom keywords
+  const anyIn = (min,max) => numbers.some(n=>n>=min&&n<=max);
+  const maxIn = (min,max) => Math.max(...numbers.filter(n=>n>=min&&n<=max),0);
+  const minIn = (min,max) => Math.min(...numbers.filter(n=>n>=min&&n<=max),999);
+  const hasHR = hasAny(l,['pulse','heart rate','bpm','hr','heartbeat','tachycardia','bradycardia']);
+  const hasO2 = hasAny(l,['o2','oxygen','saturation','spo2','pulse ox']);
+  const hasBP = hasAny(l,['bp','blood pressure','pressure','sys','dia','hypertension','hypotension']);
+  const c = clean; // negation-stripped text for symptom matching
+
+  // Heart rate (normal 60-100, urgent 101-120, emergency >130 or <40)
+  if(hasHR && anyIn(40,250)){
+    const hr = maxIn(40,250);
+    if(hr > 130 || hr < 40) scores.cardiac += 10;
+    else if(hr >= 101) scores.cardiac += 4;
+    else if(hr >= 50 && hr <= 59) scores.cardiac += 1;
+    else if(hr >= 40 && hr <= 49) scores.cardiac += 4;
+  }
+  // BP (normal 90/60-129/84, urgent 130-179/85-119, emergency ≥180/120 + symptoms)
+  if(hasBP){
+    const bm = text.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+    if(bm){
+      const s=parseInt(bm[1]), d=parseInt(bm[2]);
+      if(s>=180||d>=120) scores.cardiac += 8;
+      else if(s>=130||d>=85) scores.cardiac += 3;
+      if(s<90&&s>=80) scores.cardiac += 3;
+    }
+  }
+  // O2 saturation (normal ≥95, urgent 90-94, emergency <90)
+  if(hasO2 && anyIn(50,100)){
+    const o2 = minIn(50,100);
+    if(o2<90) scores.cardiac += 10;
+    else if(o2<=94) scores.cardiac += 4;
+  }
+  // SpO2 + SOB combo
+  if(hasO2 && hasAny(c,['short of breath','sob','breathless','dyspnea','trouble breathing'])){
+    const o2b = minIn(50,100);
+    if(o2b && o2b<=94) scores.cardiac = Math.max(scores.cardiac, 6);
+  }
+  
+  if(hasAny(c,['chest pain','chest tight','chest pressure','chest discomfort'])) scores.cardiac += 5;
+  if(hasAny(c,['short of breath','sob','breathless',"can't breathe",'gasping'])) scores.cardiac += 5;
+  if(hasAny(c,['radiating','arm','shoulder'])) scores.cardiac += 3;
+  if(hasAny(c,['upper back pain','back pain','jaw pain','left arm','nausea','indigestion','heartburn','fatigue','extreme tired','cold sweat','clammy','sweating'])) scores.cardiac = Math.max(scores.cardiac, 4);
+  if(hasAny(c,['sweating','lightheaded','dizzy']) && scores.cardiac > 0) scores.cardiac += 2;
+  if(hasAny(c,['crushing','tight','heavy','squeezing']) && scores.cardiac > 0) scores.cardiac += 3;
+  // Risk modifiers
+  if(ctx.elderly) scores.cardiac = Math.round(scores.cardiac * 1.3);
+  if(ctx.diabetic) scores.cardiac += (scores.cardiac > 0 ? 3 : 2); // diabetic = higher cardiac suspicion even without chest pain
+  if(ctx.female && scores.cardiac > 0) scores.cardiac += 3; // women have atypical presentations
+  // Atypical MI profile: female + diabetic/smoker + SOB + ANY atypical symptom
+  const hasAtypicalMI = (ctx.female || ctx.diabetic || ctx.smoker) && 
+    hasAny(l,['short of breath','sob','breathless','nausea','back pain','upper back pain','jaw pain','fatigue','tired','indigestion','cold sweat']);
+  if(hasAtypicalMI && scores.cardiac < 10) scores.cardiac = 10; // minimum orange threshold
+  // SOB + risk factors = major escalation (minimum orange)
+  if(hasAny(l,['short of breath','sob','breathless']) && (ctx.diabetic || ctx.elderly || ctx.smoker || ctx.female)){
+    scores.cardiac = Math.max(scores.cardiac, 5);
+  }
+  // "Just stress" minimization with cardiac symptoms = INCREASE cardiac suspicion
+  if(ctx.minimizations > 0 && hasAny(l,['chest','heart','breath','pain','tight','pressure','back','nausea']) && scores.cardiac < 5){
+    scores.cardiac = 5;
+  }
+
+  // INFECTION / SEPSIS — vital sign scoring (3-tier)
+  const hasRR = hasAny(l,['breathing','respiratory','breaths','resp rate','rr','respirations']);
+  if(hasRR && anyIn(8,60)){
+    const rr = maxIn(8,60);
+    if(rr > 30 || rr < 8) scores.infection += 8;      // 🔴 EMERGENCY
+    else if(rr >= 21) scores.infection += 3;           // 🟠 URGENT
+  }
+  // Temperature scoring (normal 95-99.5 = 0, urgent 100.4-103.9 = 5, emergency ≥104 = 10)
+  const hasTemp = hasAny(l,['temp','temperature','fever','degree','thermometer','body']);
+  if(hasTemp && anyIn(85,110)){
+    const t = maxIn(85,110);
+    if(t >= 104) scores.infection += 10;                // 🔴 EMERGENCY
+    else if(t >= 100.4) scores.infection += 5;          // 🟠 URGENT
+    // 95-100.3 is normal — score 0
+  }
+
+  // "fever" keyword — only scores if no temp given OR temp confirms fever (not if normal range provided)
+  if(hasAny(l,['fever','temperature','chills','shaking'])){
+    const reportedTemp = numbers.filter(n=>n>=85&&n<=110);
+    const hasNormalTemp = reportedTemp.some(n=>n>=95&&n<=99.5);
+    if(!hasNormalTemp) scores.infection += 4;
+  }
+  // Low body temperature (92-97°F)
+  if(numbers.some(n=>n>=92&&n<95) && hasAny(l,['temp','temperature','fever','degree','body','thermometer','feeling cold','shivering'])){
+    scores.infection += 6;
+    log({phase:'low_temp_score',note:'92-94.9°F temp detected, added infection/hypothermia score'});
+  }
+  if(numbers.some(n=>n>=95&&n<97) && hasAny(l,['temp','temperature','fever','degree','body','thermometer']) && ctx.elderly){
+    scores.infection += 2; // Low-normal in elderly can mask infection
+  }
+  // INJURY / WOUND — generic concern scoring (not labeled as infection)
+  if(hasAny(l,['wound','cut','bleeding','injury','injured','accident','scrape','burn','bruise','laceration'])){
+    if(hasAny(l,['bleeding heavily','bleeding won\'t stop','gushing','blood spraying','severe bleeding','deep cut','large wound'])) scores.gi += 6;
+    else scores.gi += 3;
+  }
+  if(hasAny(l,['cough','sore throat','congestion','runny nose'])) scores.infection += 2;
+  if((l.includes('confused') || l.includes('confusion')) && scores.infection > 0) scores.infection += 4; // sepsis concern
+  if(hasAny(l,['stiff neck','light sensitivity','worst headache'])) scores.infection += 5; // meningitis
+  if(ctx.immunocompromised && scores.infection > 0) scores.infection += 4;
+  if(ctx.elderly && scores.infection > 0) scores.infection += 3;
+
+  // GENERIC MEDICAL CONCERN — catch-all for symptoms not matching specific clusters
+  // If the user describes any health problem, ensure at least some score is assigned
+  const medicalKeywords = ['pain','ache','hurt','symptom','sick','ill','unwell','dizzy','nausea','vomit','diarrhea','constipation','swelling','numb','tingling','rash','itch','burn','bleed','infection','inflammation','fever','chills','cough','sneeze','congestion','sore','stiff','weak','fatigue','tired','drowsy','sleep','appetite','thirst','urine','vision','hearing','breath','chest','abdomen','back','neck','throat','head','leg','arm','foot','hand','skin','joint','muscle','bone','wound','cut','injury','fall','accident','poison','allergy','reaction','swallow','speech','move','walk','stand','see','hear','smell','taste','memory','mood','anxiety','depression','stress','panic','seizure','shake','tremor','spasm','cramp','fracture','broke','broken','sprain','dislocate','twist','strain','ankle','wrist','elbow','knee','hip','shoulder','rib','jaw','toe','finger','heel','knee','spine','pelvis','collarbone','shin','thigh','bruise','bump','lump','swollen','deform','pop','snap','tear','pull','cramp','knot'];
+  const medicalMatchCount = medicalKeywords.filter(k => l.includes(k) || clean.includes(k)).length;
+  const currentMax = Object.values(scores).reduce((a,b)=>Math.max(a,b), 0);
+  if(medicalMatchCount >= 2 && currentMax === 0){
+    // At least 2 medical keywords detected but no vital sign scored — add generic concern
+    scores.gi = Math.max(scores.gi||0, Math.min(medicalMatchCount, 4));
+  }
+
+  // METABOLIC / DKA — blood glucose (normal 70-140, urgent 180-399, emergency ≥400 or <54)
+  const hasSugar = hasAny(l,['sugar','glucose','diabetes','diabetic','blood sugar']);
+  // Keyword-only score: if "sugar"/"diabetes" mentioned without a number, still score the cluster
+  if(hasSugar) scores.metabolic += 2;
+  if(hasAny(l,['high sugar','high blood sugar','sugar high','sugar running high','blood sugar high','sugar elevated'])) scores.metabolic += 2;
+  if(hasAny(l,['low sugar','low blood sugar','sugar low','sugar dropped','blood sugar low','sugar crashing'])) scores.metabolic += 3;
+  // Numerical scoring when value is provided
+  if(hasSugar && anyIn(54,800)){
+    const glu = maxIn(54,800);
+    if(glu >= 400) scores.metabolic += 10;
+    else if(glu >= 180) scores.metabolic += 4;
+    else if(glu >= 54 && glu <= 69) scores.metabolic += 2;
+  }
+  if(ctx.diabetic && (hasAny(l,['vomiting','nausea','confused','fruity breath','rapid breathing']))) scores.metabolic += 6;
+  if(ctx.diabetic && l.includes('vomiting')) scores.metabolic += 3;
+
+  // NEURO / STROKE — including headache/migraine
+  if(hasAny(l,['face droop','arm weak','slurred speech','numb one side','weak one side','confusion','sudden confusion','balance off','disoriented'])) scores.neuro += 7;
+  if(hasAny(l,['vision blur','double vision','headache','migraine','dizziness sudden']) && !l.includes('improving')) scores.neuro += 3;
+  if(l.includes('worst headache')||l.includes('severe headache')||l.includes('migraine')) scores.neuro = Math.max(scores.neuro, 5);
+  if(ctx.time_course==='sudden' && scores.neuro > 0) scores.neuro += 3;
+  if(ctx.elderly && scores.neuro > 0) scores.neuro += 2;
+
+  // MENTAL HEALTH
+  if(hasAny(l,['suicidal','want to die','end my life','suicide','kill myself'])) scores.psych += 8;
+  if(hasAny(l,['hallucinations','hearing voices','paranoid','psychosis'])) scores.psych += 5;
+  if(hasAny(l,['overdose','took too many','pills']) && hasAny(l,['confused','sleepy','slow breathing'])) scores.psych += 6;
+
+  // GI BLEED
+  if(hasAny(l,['black stool','tarry','bloody stool','vomit blood','coffee ground'])) scores.gi += 7;
+  if(ctx.anticoagulant && scores.gi > 0) scores.gi += 5;
+
+  // Apply modifiers
+  if(ctx.reliability_drops >= 2){
+    const maxKey = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+    if(scores[maxKey] > 0) scores[maxKey] += 3; // Unreliable history → bump dominant cluster
+  }
+
+  // Pediatric modifier
+  if(ctx.child){
+    if(hasAny(l, PED_DANGER)) scores.infection = Math.max(scores.infection, 5);
+    if(hasAny(l,['fever']) && numbers.some(n=>n>=100.4)) scores.infection = Math.max(scores.infection, 4);
+  }
+
+  return scores;
+}
+
+// ===== DETERMINE ZONE =====
+function determineZone(scores, ctx, override){
+  if(override) return { zone:'red', reason:override.override||override, primary:override.id||'override' };
+
+  const maxKey = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+  const maxScore = scores[maxKey];
+  const secondKey = Object.keys(scores).filter(k=>k!==maxKey).reduce((a,b)=>scores[a]>scores[b]?a:b);
+  const secondScore = scores[secondKey] || 0;
+
+  // Store clusters — when all scores 0, use null
+  S.primary = maxScore > 0 ? maxKey : null;
+  S.secondary = secondScore > 0 ? secondKey : null;
+  S.score = maxScore;
+
+  log({phase:'scoring_complete',primary:maxKey,score:maxScore,secondary:secondKey,secondary_score:secondScore,scores});
+
+  // Minimization detection: log it, NEVER lower urgency
+  if(ctx.minimizations > 0){
+    log({phase:'minimization_detected',count:ctx.minimizations});
+  }
+
+  // Zone determination with safety bias
+  if(maxScore >= 15) return { zone:'red', reason:`${maxKey}: ${maxScore} points`, primary:maxKey };
+  if(maxScore >= 10) return { zone:'orange', reason:`${maxKey}: ${maxScore} points`, primary:maxKey };
+  if(maxScore >= 4) return { zone:'yellow', reason:`${maxKey}: ${maxScore} points`, primary:maxKey };
+  return { zone:'green', reason:`${maxKey || 'none'}: ${maxScore} points`, primary:maxKey };
+}
+
+// ===== AI-GENERATED FOLLOW-UP QUESTIONS =====
+function answerQuestion(answer){
+  aM(answer, 'mu');
+  document.getElementById('aa').innerHTML = '';
+  document.getElementById('ti').placeholder = 'Type your symptoms...';
+  
+  S.msg.push({role:'user', text: answer});
+  S.question_count = (S.question_count || 0) + 1;
+  
+  // Re-score offline for safety baseline
+  const fullContext = S.msg.filter(m=>m.role==='user').map(m=>m.text).join('. ');
+  const ctx = extractContext(fullContext);
+  const numbers = extractNumbers(fullContext);
+  Object.assign(S.patient_factors, {
+    elderly: S.patient_factors.elderly || ctx.elderly,
+    child: S.patient_factors.child || ctx.child,
+    pregnant: S.patient_factors.pregnant || ctx.pregnant,
+    anticoagulant: S.patient_factors.anticoagulant || ctx.anticoagulant,
+    diabetic: S.patient_factors.diabetic || ctx.diabetic,
+    immunocompromised: S.patient_factors.immunocompromised || ctx.immunocompromised
+  });
+  if(ctx.time_course) S.time_course = ctx.time_course;
+  
+  // Extract and merge measurements from follow-up answers
+  const newMeas = extractMeasurements(answer);
+  Object.assign(S.measurements, newMeas);
+  
+  // Context-aware fallback: if answer has a number but no keyword, check what topic was last asked
+  if(Object.keys(newMeas).length === 0 && numbers.length > 0){
+    const topic = S._lastAskedTopic;
+    if(topic === 'ask_sugar'){ S.measurements.bloodSugar = Math.max(...numbers); log({phase:'ctx_sugar',v:S.measurements.bloodSugar}); }
+    else if(topic === 'ask_temp'){ S.measurements.temperature = Math.max(...numbers); log({phase:'ctx_temp',v:S.measurements.temperature}); }
+    else if(topic === 'ask_o2'){ S.measurements.oxygen = Math.min(...numbers); log({phase:'ctx_o2',v:S.measurements.oxygen}); }
+    else if(topic === 'ask_pulse'){ S.measurements.pulse = Math.max(...numbers); log({phase:'ctx_pulse',v:S.measurements.pulse}); }
+    else if(topic === 'ask_bp'){
+      const bpm = text.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+      if(bpm) S.measurements.bp = {systolic:parseInt(bpm[1]), diastolic:parseInt(bpm[2])};
+    }
+  }
+  
+  const scores = scoreClusters(fullContext, ctx, numbers);
+  
+  // Preserve previous boosted scores (severity boosts from earlier answers)
+  if(S.scores){
+    for(const k of Object.keys(scores)){
+      scores[k] = Math.max(scores[k], S.scores[k] || 0);
+    }
+  }
+  
+  // Severity boost — only when ALL scores are 0, default to 'general' not last key
+  const hasObjectiveMeas = Object.keys(newMeas).length > 0;
+  const bestCluster = () => {
+    const keys = Object.keys(scores);
+    const max = keys.reduce((a,b) => scores[a] > scores[b] ? a : b);
+    return scores[max] > 0 ? max : 'general';
+  };
+  if(!hasObjectiveMeas && hasAny(answer,['7-10','severe','7/10','8/10','9/10','10/10','worst','excruciating','unbearable'])){
+    const mk = bestCluster();
+    if(mk !== 'general') scores[mk] = Math.max(scores[mk], 8);
+    else scores.infection = Math.max(scores.infection||0, 4); // default to infection (fever/symptoms)
+    log({phase:'severity_boost',cluster:mk,new_score:scores[mk]||4});
+  }
+  if(!hasObjectiveMeas && hasAny(answer,['4-6','moderate','5/10','6/10'])){
+    const mk = bestCluster();
+    if(mk !== 'general') scores[mk] = Math.max(scores[mk], 4);
+    else scores.infection = Math.max(scores.infection||0, 2);
+  }
+  // When user confirms an unusually low reading, escalate to emergency
+  const confirmLow = hasAny(answer,['that is the correct reading','correct reading','correct','yes it is correct','confirmed']);
+  if(confirmLow){
+    if(S._hrUnusuallyLow && S._hrUnusuallyLow < 40){
+      scores.cardiac = Math.max(scores.cardiac||0, 14);
+      log({phase:'confirmed_low_hr',hr:S._hrUnusuallyLow,score:14});
+    }
+    if(S._tempUnusuallyLow && S._tempUnusuallyLow < 95){
+      scores.infection = Math.max(scores.infection||0, 10);
+      log({phase:'confirmed_low_temp',temp:S._tempUnusuallyLow,score:10});
+    }
+    if(S._gluUnusuallyLow && S._gluUnusuallyLow < 54){
+      scores.metabolic = Math.max(scores.metabolic||0, 14);
+      log({phase:'confirmed_low_glu',glu:S._gluUnusuallyLow,score:14});
+    }
+  }
+  // Objective measurement boost — 3-tier (normal / urgent / emergency)
+  if(newMeas.temperature){
+    const t = newMeas.temperature;
+    if(t >= 104){ scores.infection = Math.max(scores.infection||0, 14); log({phase:'temp_emergency',t,score:14}); }
+    else if(t >= 100.4){ scores.infection = Math.max(scores.infection||0, 6); log({phase:'temp_urgent',t,score:6}); }
+    // <95°F without symptoms → no boost (scored by symptom context elsewhere)
+  }
+  if(newMeas.bloodSugar){
+    const g = newMeas.bloodSugar;
+    if(g >= 400){ scores.metabolic = Math.max(scores.metabolic||0, 12); log({phase:'glu_emergency',g,score:12}); }
+    else if(g >= 180){ scores.metabolic = Math.max(scores.metabolic||0, 5); log({phase:'glu_urgent',g,score:5}); }
+    else if(g >= 60 && g <= 69){ scores.metabolic = Math.max(scores.metabolic||0, 2); }
+  }
+  if(newMeas.oxygen){
+    const o = newMeas.oxygen;
+    if(o < 90){ scores.cardiac = Math.max(scores.cardiac||0, 12); log({phase:'o2_emergency',o,score:12}); }
+    else if(o <= 94){ scores.cardiac = Math.max(scores.cardiac||0, 5); log({phase:'o2_urgent',o,score:5}); }
+  }
+  if(newMeas.pulse){
+    const hr = newMeas.pulse;
+    if(hr > 130 || hr < 40){ scores.cardiac = Math.max(scores.cardiac||0, 10); log({phase:'hr_emergency',hr,score:10}); }
+    else if(hr >= 101){ scores.cardiac = Math.max(scores.cardiac||0, 4); log({phase:'hr_urgent',hr,score:4}); }
+    else if(hr >= 40 && hr <= 49){ scores.cardiac = Math.max(scores.cardiac||0, 4); log({phase:'hr_brady_urgent',hr,score:4}); }
+  }
+  if(newMeas.respRate){
+    const rr = newMeas.respRate;
+    if(rr > 30 || rr < 8){ scores.infection = Math.max(scores.infection||0, 10); log({phase:'rr_emergency',rr,score:10}); }
+    else if(rr >= 21){ scores.infection = Math.max(scores.infection||0, 4); log({phase:'rr_urgent',rr,score:4}); }
+  }
+  if(newMeas.bp){
+    const s = newMeas.bp.systolic, d = newMeas.bp.diastolic;
+    const bpSx = hasAny(answer,['chest pain','chest tight','short of breath','sob','confused','confusion','headache','vision','numb']);
+    if((s >= 180 || d >= 120) && bpSx){ scores.cardiac = Math.max(scores.cardiac||0, 12); log({phase:'bp_emergency',bp:`${s}/${d}`,score:12}); }
+    else if(s >= 130 || d >= 85){ scores.cardiac = Math.max(scores.cardiac||0, 4); log({phase:'bp_urgent',bp:`${s}/${d}`,score:4}); }
+    else if(s < 90 && s >= 80){ scores.cardiac = Math.max(scores.cardiac||0, 4); log({phase:'bp_low_urgent',bp:`${s}/${d}`,score:4}); }
+  }
+  S.scores = scores;
+  const maxKey = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+  const maxKDisp = scores[maxKey] > 0 ? maxKey : 'general';
+  S.primary = scores[maxKey] > 0 ? maxKey : null;
+  S.score = scores[maxKey];
+  
+  log({phase:'re_score',primary:maxKey,score:scores[maxKey],question_count:S.question_count});
+  
+  // Safety check: if offline score >= threshold, show result immediately
+  if(scores[maxKey] >= 15) return showRed({reason:`${maxKDisp}: ${scores[maxKey]}`}, ctx);
+  if(scores[maxKey] >= 10) return showOrange(null, ctx);
+  
+  // Show next AI-generated question or result
+  askAIFollowUp(fullContext, ctx, scores, maxKDisp);
+}
+
+async function askAIFollowUp(context, ctx, scores, primary){
+  // Remove loading message if present
+  (()=>{const c=document.getElementById('cb');const l=c.lastChild;if(l&&l.classList.contains('mload'))c.removeChild(l);})();
+  
+  // HARD LIMIT: max 5 questions
+  S.question_count++;
+  if(S.question_count >= 5){
+    const mk = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+    if(scores[mk] >= 4) return showYellow(null, ctx);
+    return showGreen(null, ctx);
+  }
+  
+  // If already 3+ unique questions asked, force enough_info
+  if(S.askedQuestions && S.askedQuestions.length >= 3){
+    const mk = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+    aM('I have enough information now. Here is my assessment.','ms');
+    if(scores[mk] >= 4) return showYellow(null, ctx);
+    return showGreen(null, ctx);
+  }
+  
+  // Build conversation history for AI prompt
+  const history = S.msg.filter(m=>m.role==='user').map(m=>`Patient: ${m.text}`).join('\n');
+  const topics = S.askedQuestions ? S.askedQuestions.join(', ') : 'none';
+  const clusterNames = {cardiac:'heart',infection:'infection/fever',metabolic:'metabolic/diabetes',neuro:'neurological',psych:'medication/psych',gi:'gastrointestinal',general:'general'};
+  const clusterName = clusterNames[primary] || primary || 'general';
+  
+  // Inject relevant disease knowledge
+  let diseaseCtx = '';
+  if (typeof DISEASE_KNOWLEDGE !== 'undefined' && DISEASE_KNOWLEDGE[primary]) {
+    const cat = DISEASE_KNOWLEDGE[primary];
+    if (cat && cat.conditions) {
+      diseaseCtx = cat.conditions.slice(0, 3).map(c =>
+        `- ${c.name}: typical="${c.typical||''}", red flags: ${(c.redFlags||[]).join(', ')}`
+      ).join('\n');
+    }
+  }
+  if (!diseaseCtx && typeof DISEASE_KNOWLEDGE !== 'undefined') {
+    // Search across all categories
+    for (const k of Object.keys(DISEASE_KNOWLEDGE)) {
+      if (k === 'version' || k === 'disclaimer' || k === 'triageRules') continue;
+      const cat = DISEASE_KNOWLEDGE[k];
+      if (cat && cat.conditions) {
+        for (const c of cat.conditions) {
+          if (c.name.toLowerCase().includes(primary) || (c.redFlags || []).some(f => f.toLowerCase().includes(primary))) {
+            if(c.redFlags) diseaseCtx += `- ${c.name}: ${c.redFlags.join(', ')}\n`;
+          }
+        }
+      }
+    }
+  }
+
+  // Build measurements context for AI (6-tier US classification)
+  const meas = S.measurements || {};
+  let measKnown = '';
+  if(meas.temperature) measKnown += `- Temperature: ${meas.temperature}°F (3-tier: normal 95-99.5 | urgent 100.4-103.9 | emergency ≥104 or <95+symptoms)\n`;
+  if(meas.bloodSugar) measKnown += `- Blood glucose: ${meas.bloodSugar} mg/dL (3-tier: normal 70-140 | urgent 180-399 | emergency ≥400 or <54 or +symptoms)\n`;
+  if(meas.oxygen) measKnown += `- O2 sat: ${meas.oxygen}% (3-tier: normal ≥95 | urgent 90-94 | emergency <90)\n`;
+  if(meas.bp) measKnown += `- BP: ${meas.bp.systolic}/${meas.bp.diastolic} (3-tier: normal 90/60-129/84 | urgent 130-179/85-119 | emergency ≥180/120+symptoms)\n`;
+  if(meas.pulse) measKnown += `- HR: ${meas.pulse} bpm (3-tier: normal 60-100 | urgent 101-120 or 50-59+symptoms | emergency >130 or <40 or +chest pain/fainting/SOB)\n`;
+  if(meas.respRate) measKnown += `- RR: ${meas.respRate}/min (3-tier: normal 12-20 | urgent 21-24 | emergency >30 or <8)\n`;
+  if(!measKnown) measKnown = '- No objective measurements provided yet\n';
+
+  // Determine what specific measurement to ask for based on cluster
+  let valuePrompt = '';
+  if(clusterName.includes('fever') || clusterName.includes('infection') || clusterName.includes('ill')){
+    if(!meas.temperature){
+      valuePrompt = '\nCritical: If fever was mentioned but NO temperature number given, ask "What is your temperature?" with specific number options.';
+    } else if(meas.temperature >= 85 && meas.temperature < 92){
+      valuePrompt = '\nTemperature reported as '+meas.temperature+'°F, which is unusually low for a body temp. Ask "That reading seems very low — could you double-check your thermometer and confirm?"';
+    } else {
+      valuePrompt = '\nTemperature already known ('+meas.temperature+'°F). Do NOT ask about severity or temperature. Ask about other symptoms like duration, cough, breathing.';
+    }
+  }
+  if(clusterName.includes('diabetes') || clusterName.includes('metabolic') || clusterName.includes('sugar')){
+    if(!meas.bloodSugar){
+      valuePrompt = '\nCritical: If blood sugar was mentioned but NO number given, ask "What is your blood sugar reading?" with specific value ranges.';
+    } else if(meas.bloodSugar >= 20 && meas.bloodSugar < 60){
+      valuePrompt = '\nBlood sugar reported as '+meas.bloodSugar+' mg/dL — unusually low. Ask "That reading seems very low — could you re-check your meter?"';
+    } else {
+      valuePrompt = '\nBlood sugar already known ('+meas.bloodSugar+'). Do NOT ask about severity. Ask about other symptoms like vomiting, confusion, breathing.';
+    }
+  }
+  if(clusterName.includes('heart') || clusterName.includes('cardiac') || clusterName.includes('breathing') || clusterName.includes('sob') || clusterName.includes('tachy') || clusterName.includes('brady')){
+    if(meas.pulse >= 20 && meas.pulse < 40 && !meas.oxygen){
+      valuePrompt += '\nHeart rate reported as '+meas.pulse+' bpm — unusually low. Ask "That pulse seems very low — could you check it again?"';
+    } else if(!meas.pulse && !meas.oxygen){
+      valuePrompt += '\nIf chest pain/palpitations but NO heart rate mentioned, ask "What is your pulse or heart rate?"';
+    }
+    if(!meas.oxygen) valuePrompt += '\nIf breathing difficulty but NO O2 saturation mentioned, ask "Do you have a pulse oximeter? What is your oxygen level?"';
+    if(!meas.pulse) valuePrompt += '\nIf chest pain/palpitations but NO heart rate mentioned, ask "What is your pulse or heart rate?"';
+  }
+
+  const prompt = `You are a medical triage assistant. Ask ONE follow-up question.
+
+Patient concern: ${clusterName}
+Already asked about: ${topics}
+Measurements known:${measKnown.slice(0,300)}
+Conversation:
+${history}
+
+Relevant medical knowledge:
+${diseaseCtx || 'General triage assessment needed.'}
+${VITALS_REF}
+${valuePrompt}
+
+Return valid JSON only:
+{"question":"one question about a DIFFERENT topic","options":["Answer1","Answer2","Answer3"],"enough_info":false}
+
+CRITICAL RULES:
+- If a specific measurement (temperature, blood sugar, O2) is relevant and NOT yet provided, ask for that SPECIFIC VALUE, not a 1-10 severity.
+- If the user already provided a number (e.g. "I have fever 101"), DO NOT ask about severity or measurement again.
+- If objective data is already known, ask about OTHER symptoms (duration, associated symptoms, triggers).
+- "1-10 severity" questions should ONLY be for pain/symptoms that don't have objective measurements.
+- Ask about a NEW topic not in "Already asked" list
+- If 2+ questions already asked, set enough_info=true
+- Options should be relevant to the question
+- Keep question simple, one sentence
+- Reference the medical knowledge to ask informed follow-ups`;
+
+  // Proxy AI request through backend server (avoids CORS issues)
+  try{
+    const ctrl = new AbortController();
+    const tmr = setTimeout(()=>ctrl.abort(), 15000);
+    const res = await fetch('/api/chat', {
+      method:'POST', signal: ctrl.signal,
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt, temperature:0.3, max_tokens:300})
+    });
+    clearTimeout(tmr);
+    if(!res.ok){ if(res.status === 429) S._rateLimited = Date.now(); throw new Error('HTTP '+res.status); }
+    S._rateLimited = 0;
+    const data = await res.json();
+    let content = data.choices?.[0]?.message?.content || '';
+    content = content.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const jm = content.match(/\{[\s\S]*\}/);
+    if(!jm) throw new Error('No JSON');
+    const parsed = JSON.parse(jm[0]);
+    
+    // Remove "Let me ask a follow-up question..." loading message
+    const chatMsgs = document.getElementById('cb');
+    const lastMsg = chatMsgs.lastChild;
+    if(lastMsg && lastMsg.classList.contains('mload')) chatMsgs.removeChild(lastMsg);
+    
+    // Remove loading message
+    try{const cm=document.getElementById('cb');const lm=cm.lastChild;if(lm&&lm.classList.contains('mload'))cm.removeChild(lm);}catch(e){}
+
+    if(parsed.enough_info || (S.askedQuestions && S.askedQuestions.length >= 2)){
+      const mk = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+      aM('I have enough information now. Here is my assessment.','ms');
+      if(scores[mk] >= 4) showYellow(null, ctx); else showGreen(null, ctx);
+      return;
+    }
+    if(parsed.question){
+      const newQ = parsed.question.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
+      const isRepeat = (S.askedQuestions || []).some(existing => {
+        const eq = existing.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().slice(0,25);
+        return eq === newQ.slice(0,25) || newQ.includes(eq) || eq.includes(newQ);
+      });
+      if(isRepeat){
+        aM('I have enough information now. Here is my assessment.','ms');
+        const mk = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+        if(scores[mk] >= 4) showYellow(null, ctx); else showGreen(null, ctx);
+        return;
+      }
+      if(!S.askedQuestions) S.askedQuestions = [];
+      S.askedQuestions.push(parsed.question);
+      // Track what topic the AI asked about for context-aware number fallback
+      const ql = parsed.question.toLowerCase();
+      if(ql.includes('temperature')||ql.includes('thermometer')||ql.includes('temp')) S._lastAskedTopic = 'ask_temp';
+      else if(ql.includes('blood sugar')||ql.includes('glucose')||ql.includes('sugar reading')||ql.includes('bg')) S._lastAskedTopic = 'ask_sugar';
+      else if(ql.includes('oxygen')||ql.includes('o2')||ql.includes('saturation')||ql.includes('pulse ox')||ql.includes('oximeter')) S._lastAskedTopic = 'ask_o2';
+      else if(ql.includes('pulse')||ql.includes('heart rate')||ql.includes('bpm')||ql.includes('hr')) S._lastAskedTopic = 'ask_pulse';
+      else if(ql.includes('blood pressure')||ql.includes('bp')||ql.includes('systolic')||ql.includes('diastolic')) S._lastAskedTopic = 'ask_bp';
+      else S._lastAskedTopic = null;
+      const options = (parsed.options && parsed.options.length > 1) ? parsed.options : ['Yes','No','Not sure'];
+      document.getElementById('aa').innerHTML = options.map(o => 
+        `<button class="ab" onclick="answerQuestion(decodeURIComponent('${encodeURIComponent(o)}'))">${esc(o)}</button>`
+      ).join('');
+      aM(parsed.question, 'mb');
+      en(true);
+      document.getElementById('ti').placeholder = 'Tap an option or type...';
+      return;
+    }
+    // AI returned but no question/enough_info — assume enough
+    aM('I have enough information now. Here is my assessment.','ms');
+    showAssessmentFromScores(ctx, scores);
+    return;
+  } catch(e){
+    log({phase:'ai_proxy_error',error:e.message});
+    S._rateLimited = Date.now();
+    (()=>{const c=document.getElementById('cb');const l=c.lastChild;if(l&&l.classList.contains('mload'))c.removeChild(l);})();
+    showAssessmentFromScores(ctx, scores);
+  }
+}
+
+// ===== IMMEDIATE SCORE-BASED ASSESSMENT (used when AI is unavailable) =====
+function showAssessmentFromScores(ctx, scores){
+  const keys = Object.keys(scores || {cardiac:0,infection:0,metabolic:0,neuro:0,psych:0,gi:0});
+  const mk = keys.reduce((a,b)=>(scores||{})[a]>(scores||{})[b]?a:b);
+  const score = (scores||{})[mk] || 0;
+  const maxScore = Object.values(scores||{}).reduce((a,b) => Math.max(a,b), 0);
+  const hasConcern = S.msg && S.msg.some(m => m.role==='user' && m.text && m.text.trim().length > 3);
+
+  // Clinical concern detected — skip follow-up flags, show assessment directly
+  if(score >= 4 || maxScore >= 4){
+    aM('I have enough information to provide an assessment.','ms');
+    if(score >= 15) showRed({reason:`${mk}: ${score} points`}, ctx);
+    else if(score >= 10) showOrange({primary:mk}, ctx);
+    else showYellow(null, ctx);
+    return;
+  }
+
+  // For GREEN-level scores (no clinical concern), ask one neutral follow-up
+  if(maxScore === 0 && hasConcern && !S._askedNeutralFollowUp){
+    S._askedNeutralFollowUp = true;
+    aM('Do you have any other symptoms or concerns?', 'mb');
+    document.getElementById('aa').innerHTML = ['Yes','No'].map(o => 
+      `<button class="ab" onclick="answerQuestion('${o}')">${o}</button>`
+    ).join('');
+    en(true);
+    document.getElementById('ti').placeholder = 'Type or select an option...';
+    return;
+  }
+  // If user said Yes to neutral follow-up, ask what other symptoms
+  if(S._askedNeutralFollowUp && !S._askedWhatSymptoms && hasConcern){
+    const lastAnswer = S.msg && S.msg.length > 0 ? S.msg[S.msg.length-1].text.toLowerCase() : '';
+    if(lastAnswer === 'yes' || lastAnswer === 'yes i have other symptoms'){
+      S._askedWhatSymptoms = true;
+      aM('What other symptoms are you experiencing?', 'mb');
+      en(true);
+      document.getElementById('ti').placeholder = 'Describe your other symptoms...';
+      return;
+    }
+  }
+
+  aM('I have enough information to provide an assessment.','ms');
+
+  if(score >= 15) showRed({reason:`${mk}: ${score} points`}, ctx);
+  else if(score >= 10) showOrange({primary:mk}, ctx);
+  else if(score >= 4 || (maxScore > 0 && hasConcern)) showYellow(null, ctx);
+  else showGreen(null, ctx);
+}
+
+// ===== AI CONSULTATION =====
+async function consultAI(text, scores, ctx){
+  if(S._rateLimited && Date.now() - S._rateLimited < 60000) return null;
+
+  try{
+    const ctrl = new AbortController();
+    const tmr = setTimeout(()=>ctrl.abort(), 15000);
+    const res = await fetch('/api/chat', {
+      method:'POST', signal: ctrl.signal,
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt: text, temperature:0.2, max_tokens:300})
+    });
+    clearTimeout(tmr);
+    S._rateLimited = 0;
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    let content = data.choices?.[0]?.message?.content || '';
+    content = content.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const jm = content.match(/\{[\s\S]*\}/);
+    if(!jm) throw new Error('No JSON');
+    const parsed = JSON.parse(jm[0]);
+    log({phase:'ai_consultation_success',response:parsed});
+    return parsed;
+  } catch(e){
+    log({phase:'ai_consult_error',error:e.message});
+    return null;
+  }
+}
+
+// ===== INFORMATION QUERY DETECTION =====
+function isInfoQuery(text){
+  const l = text.toLowerCase().trim();
+  const patterns = ['what is','what are','define','explain','tell me about','describe','what does','how does','causes of','symptoms of','treatment for','do\'s and don\'ts','dos and donts','what causes','what happens','what should i do for','how to treat','what is the treatment','define:'];
+  return patterns.some(p => l.startsWith(p) || l.startsWith('can you ' + p) || l.startsWith('please ' + p) || l.includes(p + ' ') || l.includes(p + '?'));
+}
+
+function answerInfoQuery(text){
+  const l = text.toLowerCase();
+  // Search disease knowledge for matching condition
+  let match = null;
+  if(typeof DISEASE_KNOWLEDGE !== 'undefined'){
+    for(const key of Object.keys(DISEASE_KNOWLEDGE)){
+      if(key === 'version' || key === 'disclaimer' || key === 'triageRules' || key === 'vitalSigns') continue;
+      const cat = DISEASE_KNOWLEDGE[key];
+      if(!cat || !cat.conditions) continue;
+      for(const c of cat.conditions){
+        const name = c.name.toLowerCase();
+        // Check if user's query mentions this condition
+        if(l.includes(name) || name.includes(l.replace(/what is |what are |define |explain |tell me about /,'').trim().slice(0,20))){
+          match = c;
+          break;
+        }
+      }
+      if(match) break;
+    }
+  }
+  if(match){
+    let html = '<div class="msg mb" style="max-width:95%"><strong>' + esc(match.name) + '</strong><br><br>';
+    html += '<strong>What it is:</strong> ' + esc(match.typical) + '<br><br>';
+    if(match.atypical && match.atypical !== match.typical) html += '<strong>Atypical presentation:</strong> ' + esc(match.atypical) + '<br><br>';
+    html += '<strong>Red flags to watch for:</strong><br>';
+    for(const rf of match.redFlags) html += '&bull; ' + esc(rf) + '<br>';
+    html += '<br><strong>Risk factors:</strong> ' + esc(match.riskFactors.join(', ')) + '<br><br>';
+    if(match.advice){
+      html += '<strong>Do\'s and Don\'ts:</strong> ' + esc(match.advice) + '<br>';
+    } else {
+      html += '<strong>Recommended action:</strong> Monitor symptoms. Seek medical evaluation if red flags present or symptoms worsen.<br>';
+    }
+    html += '<br><em style="font-size:12px;color:var(--t3)">Urgency: ' + esc(match.urgency) + '</em>';
+    html += '</div>';
+    aM(html, 'mb');
+    return;
+  }
+  // No match in knowledge base — try AI
+  aM('Let me look that up for you...', 'mload');
+  askGeneralKnowledge(text);
+}
+
+async function askGeneralKnowledge(text){
+  if(S._rateLimited && Date.now() - S._rateLimited < 60000) return showNoInfo();
+  try{
+    const res = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt:'Answer this medical question briefly (3-5 sentences). Include definition, key symptoms, and what to do if concerned:\n\n'+text, temperature:0.3, max_tokens:400})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    (()=>{const c=document.getElementById('cb');const l=c.lastChild;if(l&&l.classList.contains('mload'))c.removeChild(l);})();
+    aM(content, 'mb');
+  } catch(e){
+    log({phase:'gen_knowledge_err',error:e.message});
+    S._rateLimited = Date.now();
+    showNoInfo();
+  }
+  function showNoInfo(){
+    (()=>{const c=document.getElementById('cb');const l=c.lastChild;if(l&&l.classList.contains('mload'))c.removeChild(l);})();
+    aM('I could not find information on that topic in my medical knowledge base. Please consult your healthcare provider.', 'mb');
+  }
+}
+
+// ===== MAIN PROCESSING PIPELINE =====
+async function process(text){
+  const t = text.trim();
+  if(!t || S.step===99) return;
+
+  log({phase:'input_received',text:t.slice(0,100)});
+
+  // Check if user is asking a general medical knowledge question
+  if(isInfoQuery(t)){
+    aM(t, 'mu');
+    answerInfoQuery(t);
+    return;
+  }
+
+  // Detect caregiver mode
+  if(!S.caregiver && detectCaregiver(t)){
+    S.caregiver = true;
+    document.getElementById('cgBadge').classList.add('show');
+    aM('You\'re describing symptoms for someone else. I\'ll adjust my questions accordingly.','mcg');
+  }
+
+  // Store message
+  S.msg.push({role:'user',text:t});
+  const ctx = extractContext(t);
+
+  // Extract and merge measurements
+  const newMeas = extractMeasurements(t);
+  Object.assign(S.measurements, newMeas);
+
+  // Merge persistent patient factors
+  Object.assign(S.patient_factors, {
+    elderly: S.patient_factors.elderly || ctx.elderly,
+    child: S.patient_factors.child || ctx.child,
+    pregnant: S.patient_factors.pregnant || ctx.pregnant,
+    anticoagulant: S.patient_factors.anticoagulant || ctx.anticoagulant,
+    diabetic: S.patient_factors.diabetic || ctx.diabetic,
+    immunocompromised: S.patient_factors.immunocompromised || ctx.immunocompromised
+  });
+  if(ctx.time_course) S.time_course = ctx.time_course;
+  // Reliability degrades based on contradictions/uncertainty, never auto-improves
+  if(ctx.reliability_drops >= 2) S.reliability = 'low';
+  else if(ctx.reliability_drops >= 1 && S.reliability === 'high') S.reliability = 'moderate';
+
+  // STAGE 1: CANARY
+  const numbers = extractNumbers(t);
+  const canary = runCanary(t, numbers);
+  if(canary){
+    log({phase:'canary_result',result:canary});
+    return showRed(canary, ctx);
+  }
+
+  // STAGE 2: Context extracted above
+
+  // STAGE 3: Cluster Scoring
+  const scores = scoreClusters(t, ctx, numbers);
+  const zoneResult = determineZone(scores, ctx, null);
+
+  log({phase:'zone_result',result:zoneResult});
+
+  // UNCERTAINTY CHECK: If top clusters are close (diff < 4) or complex case, consult AI
+  const maxKey = Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+  const maxScore = scores[maxKey];
+  const secondKey = Object.keys(scores).filter(k=>k!==maxKey).reduce((a,b)=>scores[a]>scores[b]?a:b);
+  const secondScore = scores[secondKey] || 0;
+  const diff = maxScore - secondScore;
+  
+  const isUncertain = diff < 4 && maxScore >= 4;
+  const isAtypicalComplex = ctx.minimizations > 0 && maxScore >= 4;
+  const isMultiSymptom = t.length > 80 && maxScore >= 3;
+  
+  if(isUncertain || isAtypicalComplex || isMultiSymptom){
+    log({phase:'uncertainty_detected',diff,isUncertain,isAtypicalComplex,isMultiSymptom});
+    // Try AI for complex cases
+    try {
+      const aiResult = await consultAI(t, scores, ctx);
+      if(aiResult && aiResult.zone){
+        log({phase:'ai_consultation_result',result:aiResult});
+        // Validate AI result against rules (prevent AI from under-triage)
+        if(aiResult.zone === 'red') return showRed({override:aiResult.reason||'AI: possible emergency'}, ctx);
+        if(aiResult.zone === 'orange') return showOrange({primary:aiResult.primary||aiResult.condition}, ctx);
+        // Yellow or Green from AI — only use if not more dangerous than offline
+        const aiScore = aiResult.zone === 'yellow' ? 5 : aiResult.zone === 'green' ? 1 : 0;
+        if(aiScore > maxScore - 2) {
+          // AI agrees or is slightly lower, trust offline
+        } else {
+          // AI says much lower — still use offline for safety
+          log({phase:'ai_overruled_safer',ai_zone:aiResult.zone,offline_score:maxScore});
+        }
+      }
+    } catch(e) {
+      log({phase:'ai_consultation_failed',error:e.message});
+    }
+    // Fall through to offline result
+  }
+
+  // ===== DECIDE: Show result or ask AI-generated follow-up? =====
+  if(zoneResult.zone === 'red') return showRed(zoneResult, ctx);
+  if(zoneResult.zone === 'orange') return showOrange(zoneResult, ctx);
+  
+  // For yellow/green, ask AI-generated follow-up questions
+  S.step = 1;
+  log({phase:'asking_followup',count:S.question_count});
+  aM('Let me ask a follow-up question...', 'mload');
+  askAIFollowUp(t, ctx, scores, Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b));
+  return;
+}
+
+// ===== RESULT DISPLAYS =====
+
+function showRed(data, ctx){
+  S.step=99; S.zone='red';
+  S.override_fired = data.override || data.reason || null;
+  const area=document.getElementById('emArea');
+  const overrideText = data.override || data.reason || 'Emergency detected';
+
+  // Save to history
+  saveHist('red',overrideText);
+
+  // Build emergency steps
+  let steps = [];
+  if(hasAny(overrideText,['stroke','face','arm','speech','neuro'])) steps = ['Call 911 immediately.','Note the time symptoms started.','Do NOT drive yourself.','Stay with the patient.','Unlock the front door.','Do not give food or drink.'];
+  else if(hasAny(overrideText,['cardiac','chest','heart'])) steps = ['Call 911 immediately.','Sit upright, do not lie down.','Take aspirin if prescribed by your doctor.','Unlock the front door.','Do NOT drive yourself.'];
+  else if(hasAny(overrideText,['bleeding','blood'])) steps = ['Call 911 immediately.','Apply firm pressure to the wound.','Lie down and elevate your legs.','Do not eat or drink anything.'];
+  else if(hasAny(overrideText,['sugar','diabetic','metabolic'])) steps = ['Call 911 immediately.','If conscious and able, check blood sugar.','Do not give insulin if confused.','Stay with the patient.'];
+  else if(hasAny(overrideText,['breathing','resp','oxygen','hypoxia'])) steps = ['Call 911 immediately.','Sit upright — do not lie flat.','Use oxygen if you have it.','Unlock the front door.'];
+  else if(hasAny(overrideText,['pediatric','child','baby'])) steps = ['Call 911 immediately.','Keep the child calm and warm.','Do not give any food or drink.','Unlock the front door.'];
+  else steps = ['Call 911 immediately.','Do not drive yourself.','Unlock the front door.','Stay on the phone with the operator.'];
+
+  area.innerHTML = `<div class="em-screen show"><div class="em-inner">
+    <div class="em-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="em-title">EMERGENCY — Call 911 Now</div>
+    <div class="em-desc">${esc(overrideText)}</div>
+    <a href="tel:${LOCALE.emergency}" class="em-911">Call ${LOCALE.emergency} Now</a>
+    <div class="em-steps"><strong>While waiting:</strong><br>${steps.map(s=>'• '+s).join('<br>')}</div>
+    <div class="em-tools">
+      <button onclick="sPK('${esc(overrideText)}')">Speak</button>
+      <button onclick="showWhy()">Why this result?</button>
+      <button onclick="resetAll()">New Check</button>
+    </div>
+  </div></div>`;
+
+  // Hide normal result area
+  document.getElementById('ra').innerHTML = '';
+
+  // Hide input
+  document.getElementById('aa').innerHTML = '';
+  document.getElementById('ti').placeholder = 'Emergency — Click "New Check" to restart';
+  en(true);
+}
+
+function showOrange(data, ctx){
+  S.step=99; S.zone='orange';
+  const area=document.getElementById('ra');
+  const primary = S.primary || '';
+  saveHist('orange',primary);
+  const meas = S.measurements || {};
+  let measHtml = '';
+  if(meas.temperature) measHtml += `<div class="hi2"><span class="hd">Temp</span><span class="hz">${meas.temperature}°F</span></div>`;
+  if(meas.bloodSugar) measHtml += `<div class="hi2"><span class="hd">Blood Sugar</span><span class="hz">${meas.bloodSugar} mg/dL</span></div>`;
+  if(meas.oxygen) measHtml += `<div class="hi2"><span class="hd">O2 Sat</span><span class="hz">${meas.oxygen}%</span></div>`;
+  if(meas.pulse) measHtml += `<div class="hi2"><span class="hd">Heart Rate</span><span class="hz">${meas.pulse} bpm</span></div>`;
+  if(meas.bp) measHtml += `<div class="hi2"><span class="hd">BP</span><span class="hz">${meas.bp.systolic}/${meas.bp.diastolic}</span></div>`;
+  if(meas.respRate) measHtml += `<div class="hi2"><span class="hd">Resp Rate</span><span class="hz">${meas.respRate}/min</span></div>`;
+  area.innerHTML = `<div class="or-screen show"><div class="or-inner">
+    <div style="font-size:2.4rem;margin-bottom:4px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+    <div class="rzt">URGENT — Medical Evaluation Needed</div>
+    <div class="rzd">Please seek medical evaluation within the next few hours.<br>Your symptoms should not wait overnight.</div>
+    ${measHtml ? '<div style="margin:8px 0;font-size:0.78rem;text-align:left;background:rgba(0,0,0,0.12);border-radius:8px;padding:8px">'+measHtml+'</div>' : ''}
+    <a href="tel:+12485595661" class="rza" style="background:var(--amber);color:#0f172a;display:inline-block;padding:10px 24px;border-radius:40px;font-weight:600;font-size:0.9rem;text-decoration:none;margin:3px">Call Carebridge: (248) 559-5661</a>
+    <div style="font-size:0.72rem;margin-top:8px;opacity:.7">If you cannot reach anyone in <strong>15 minutes</strong>, go to the nearest ${LOCALE.er_label}.</div>
+    <div class="rzt2" style="margin-top:10px">
+      <button onclick="sPK('Urgent medical evaluation needed for ${primary} symptoms.')">Speak</button>
+      <button onclick="showWhy()">Why this result?</button>
+      <button onclick="resetAll()">New Check</button>
+    </div>
+  </div></div>`;
+  aS('URGENT — Seek medical evaluation within hours.'); en(true);
+}
+
+function showYellow(data, ctx){
+  S.step=99; S.zone='yellow';
+  saveHist('yellow',S.primary||'');
+  document.getElementById('ra').innerHTML = `<div class="rz show rzy"><div style="font-size:2rem;margin-bottom:4px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.5 1.5 0 0 0 1.265 2.275H20.48a1.5 1.5 0 0 0 1.264-2.275L13.638 3.59a1.5 1.5 0 0 0-2.546 0z"/><path d="M12 17h.01"/></svg></div><div class="rzt">Medical Evaluation Recommended</div><div class="rzc" style="margin:4px 0">Your symptoms have been noted — medical evaluation is recommended.</div><div class="rzd">Call your doctor or Carebridge today for evaluation.<br>Do not wait if symptoms worsen.</div><a href="tel:+12485595661" class="rza rz2">Call Carebridge (248) 559-5661</a><div class="rzt2"><button onclick="sPK('Medical evaluation recommended.')">Speak</button><button onclick="showWhy()">Why?</button><button onclick="qMore()">Tell me more</button><button onclick="resetAll()">New Check</button></div></div>`;
+  aS('Assessment complete — moderate risk level.'); en(true);
+}
+
+function showGreen(data, ctx){
+  S.step=99; S.zone='green';
+  saveHist('green',S.primary||'');
+  document.getElementById('ra').innerHTML = `<div class="rz show rzg"><div style="font-size:2rem;margin-bottom:4px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="rzt">Low Concern — Monitor at Home</div><div class="rzc" style="margin:4px 0">No urgent risk factors identified based on the information provided.</div><div class="rzd">Rest at home, stay hydrated, and monitor your symptoms.<br>Call Carebridge if symptoms change or worsen.</div><a href="tel:+12485595661" class="rza rz3">Call Carebridge (248) 559-5661 if concerned</a><div class="rzt2"><button onclick="sPK('Low concern. Monitor at home.')">Speak</button><button onclick="showWhy()">Why?</button><button onclick="resetAll()">New Check</button></div></div>`;
+  aS('Assessment complete — low risk level.'); en(true);
+}
+
+// ===== WHY THIS RESULT =====
+function showWhy(){
+  const log = S.decision_log;
+  const area = document.getElementById('ra');
+  let html = '<div class="why show" style="display:block;margin-top:8px">';
+  html += '<div class="wl">Assessment Summary</div>';
+  html += '<strong>Zone:</strong> '+(S.zone||'N/A')+'<br>';
+  html += '<strong>Confidence:</strong> '+S.reliability+'<br>';
+  if(S.primary) html += '<strong>Primary concern:</strong> '+S.primary+'<br>';
+  if(S.secondary) html += '<strong>Secondary concern:</strong> '+S.secondary+'<br>';
+  html += '<strong>Total score:</strong> '+S.score+'<br>';
+  if(S.override_fired) html += '<strong>Override:</strong> '+S.override_fired+'<br>';
+  if(S.time_course) html += '<strong>Time course:</strong> '+S.time_course+'<br>';
+  if(S.contradictions > 0) html += '<strong>Conflicting answers detected:</strong> Reliability reduced.<br>';
+  if(S.caregiver) html += '<strong>Reported for someone else</strong><br>';
+  html += '<div style="margin-top:6px;font-size:.6rem;opacity:.4">Decision log entries: '+S.decision_log.length+'</div>';
+  html += '</div>';
+  // Append or replace
+  const existing = area.querySelector('.why');
+  if(existing) existing.remove();
+  area.insertAdjacentHTML('beforeend',html);
+}
+
+function qMore(){
+  S.step=1;
+  aS('You can tell me more about your symptoms below.');
+  en(true);
+  document.getElementById('ti').placeholder = 'Tell me more...';
+}
+
+function sPK(t){
+  if(window.speechSynthesis){
+    const u=new SpeechSynthesisUtterance(t||'Assessment complete');u.rate=.85;
+    window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
+  }
+}
+
+// ===== VOICE =====
+function tV(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition||window.mozSpeechRecognition;
+  if(!SR){ts('Voice not supported. Use Chrome or Safari.');return}
+  if(listening){if(rec)rec.stop();stopV();return}
+  try{
+    if(!rec){rec=new SR();rec.continuous=false;rec.interimResults=true;rec.lang='en-US';
+      rec.onresult=function(e){document.getElementById('ti').value=Array.from(e.results).map(r=>r[0].transcript).join('')};
+      rec.onend=function(){stopV();const v=document.getElementById('ti').value.trim();if(v&&v.length>1)send()};
+      rec.onerror=function(e){stopV();if(e.error!=='no-speech')ts('Voice error. Try typing.')}}
+    rec.start();listening=true;document.getElementById('vb').classList.add('on');
+    document.getElementById('vb').innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
+  }catch(e){ts('Could not start mic.')}
+}
+function stopV(){
+  listening=false;document.getElementById('vb').classList.remove('on');
+  document.getElementById('vb').innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
+}
+
+// ===== SEND =====
+function sendText(t){document.getElementById('ti').value=t;send();}
+
+function showQuickChips(){
+  const aa=document.getElementById('aa');
+  if(!aa) return;
+  const chips = [
+    {text:'Chest pain / pressure',val:'I have chest pain or pressure',cls:'qc-em'},
+    {text:'Trouble breathing',val:'I am having trouble breathing',cls:'qc-em'},
+    {text:'Fever and symptoms',val:'I have a fever and feel sick',cls:''},
+    {text:'Fell / injury',val:'I fell down and need help',cls:''},
+    {text:'High blood sugar',val:'My blood sugar is high',cls:''},
+    {text:'Headache',val:'I have a bad headache',cls:''},
+    {text:'Parent seems confused',val:'My parent seems confused',cls:''},
+    {text:'Medication problem',val:'I have a medication concern',cls:''}
+  ];
+  const existing=aa.querySelector('.qchips');
+  if(!existing){
+    aa.innerHTML = '<div class="chip-group"><div class="chip-label">Quick concerns</div><div class="qchips">' + chips.map(c => 
+      `<button class="qc ${c.cls}" onclick="sendText('${c.val.replace(/'/g,"\\'")}')">${c.text}</button>`
+    ).join('') + '</div></div>';
+    aa._chips=true;
+  }
+}
+
+function send(){
+  const inp=document.getElementById('ti');const t=inp.value.trim();
+  if(!t) return;
+  inp.value='';document.getElementById('aa').innerHTML='';
+
+  // If assessment was already complete, reset and start fresh
+  if(S.step===99){
+    resetAll();
+    // Re-add the user's new message after reset
+    setTimeout(()=>{
+      aM(t,'mu');
+      process(t);
+    }, 400);
+    return;
+  }
+
+  aM(t,'mu');
+
+  // If awaiting a question answer, route to answerQuestion
+  if(S.step===1 && S.question_count > 0){
+    answerQuestion(t);
+    return;
+  }
+
+  process(t);
+}
+
+// ===== PANELS =====
+function tP(n){
+  const el=document.getElementById('pn'+n.charAt(0).toUpperCase()+n.slice(1));
+  if(!el)return;const s=el.classList.toggle('show');
+  if(s){if(n==='vitals')loadV();if(n==='history')loadH()}
+}
+function loadV(){try{const d=JSON.parse(localStorage.getItem('cb-v')||'{}');if(d.t)document.getElementById('vT').textContent=d.t+'°F';if(d.hr)document.getElementById('vHR').textContent=d.hr+' bpm';if(d.bp)document.getElementById('vBP').textContent=d.bp;if(d.rr)document.getElementById('vRR').textContent=d.rr+' /min';if(d.o2)document.getElementById('vO2').textContent=d.o2+'%';if(d.s)document.getElementById('vS').textContent=d.s+' mg/dL'}catch(e){}}
+function sV(k,v){if(!v)return;try{const d=JSON.parse(localStorage.getItem('cb-v')||'{}');d[k]=v;localStorage.setItem('cb-v',JSON.stringify(d));loadV()}catch(e){}}
+function loadH(){try{const h=JSON.parse(localStorage.getItem('cb-h')||'[]');const el=document.getElementById('hl');if(!h.length){el.innerHTML='<div style="text-align:center;font-size:.65rem;opacity:.4">None yet</div>';return}el.innerHTML=h.slice(-20).reverse().map(i=>'<div class="hi2"><span><span class="hd">'+i.d+'</span> '+(i.c||'')+'</span><span class="hz" style="color:'+(i.z==='red'?'#EF4444':i.z==='orange'?'#EAB308':i.z==='yellow'?'#EAB308':'#22C55E')+'">'+i.z.toUpperCase()+'</span></div>').join('')}catch(e){}}
+function saveHist(z,c){try{const h=JSON.parse(localStorage.getItem('cb-h')||'[]');h.push({d:new Date().toLocaleDateString(),z,c});localStorage.setItem('cb-h',JSON.stringify(h.slice(-30)))}catch(e){}}
+
+// ===== DARK MODE =====
+function toDark(){document.body.classList.toggle('light');localStorage.setItem('cb-d',document.body.classList.contains('light')?'1':'0')}
+if(localStorage.getItem('cb-d')==='1')document.body.classList.add('light')
+
+// ===== RESET =====
+function resetAll(){
+  S={msg:[],step:0,zone:null,primary:null,secondary:null,score:0,reliability:'high',caregiver:false,minimizations:0,contradictions:0,time_course:null,scores:{cardiac:0,infection:0,metabolic:0,neuro:0,psych:0,gi:0},decision_log:[],patient_factors:{elderly:false,child:false,pregnant:false,anticoagulant:false,diabetic:false,immunocompromised:false},question_count:0,askedQuestions:null,override_fired:null,measurements:{},_rateLimited:0,_askedFallbackTopics:[],_tempUnusuallyLow:0,_hrUnusuallyLow:0,_rrUnusuallyLow:0,_gluUnusuallyLow:0,_askedNeutralFollowUp:false,_askedWhatSymptoms:false};
+  document.getElementById('cb').innerHTML='';
+  document.getElementById('ra').innerHTML='';
+  document.getElementById('emArea').innerHTML='';
+  document.getElementById('cgBadge').classList.remove('show');
+  document.getElementById('cc').classList.remove('show');
+  document.getElementById('ti').value='';en(true);
+  document.getElementById('aa').innerHTML='';
+  document.getElementById('ti').placeholder='Type your symptoms...';
+  setTimeout(()=>{aM('Describe your symptoms above and I\'ll assess the risk level.','mb')},300)
+}
+
+// ===== INIT =====
+loadV();loadH();
+  setTimeout(()=>{aM('Describe your symptoms above and I\'ll assess the risk level.','mb')},400)
+</script>
+
+</body>
+</html>
